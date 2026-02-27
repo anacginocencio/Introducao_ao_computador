@@ -4,13 +4,13 @@
 ### Materiais
 - [Notas de aula](Aula_01_Introducao_ao_Computador.pdf)
   
-<!--
+
 ###  Materiais extras
 
 #### Vídeo 1 - Vídeo curto Aula Introdução
 [![Introdução - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/1rb9JQev7L4)
 
--->
+
 
 ## Desenvolvimento Aula 
 
