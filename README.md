@@ -1,4 +1,4 @@
 # INTRODUÇÃO AO COMPUTADOR - PROFCOMP
 
 ## PLANEJAMENTO  
-- [Roteiro Aulas](roteiro)
+- [Roteiro Aulas](roteiro.md)
