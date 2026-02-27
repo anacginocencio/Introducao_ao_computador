@@ -2,7 +2,7 @@
 ## Tema aula - Apresentação Disciplina. Conceito de Informação Digital
 
 ### Materiais
-- [Notas de aula](documentos/Aula_01_Introducao_ao_Computador.pdf)
+- [Notas de aula](Aula_01_Introducao_ao_Computador.pdf)
   
 <!--
 ###  Materiais extras
