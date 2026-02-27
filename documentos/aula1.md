@@ -3,7 +3,7 @@
 
 ### Materiais
 - [Notas de aula](documentos/Aula_01_Introducao_ao_Computador.pdf)
-
+  
 <!--
 ###  Materiais extras
 
