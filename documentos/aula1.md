@@ -8,7 +8,7 @@
 ###  Materiais extras
 
 #### Vídeo 1 - Vídeo curto Aula Introdução
-[![Introdução - Aula Rapida](capa_git_aulas.png)](https://youtu.be/Cpx0TKkwgHk)
+[![Introdução - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/1rb9JQev7L4)
 
 -->
 
