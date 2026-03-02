@@ -4,13 +4,13 @@
 ### Materiais
 - [Notas de aula](Aula_02_Introducao_ao_computador.pdf)
   
-<!--
+
 ###  Materiais extras
 
-#### Vídeo 1 - Vídeo curto Aula Introdução
-[![Introdução - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/1rb9JQev7L4)
+#### Vídeo 2 - Vídeo curto Aula Sistemas de Numeração
+[![Sistemas de Numeração - Aula Rápida](CAPA_AULAS.png)](https://youtu.be/pftzoWJbtNc)
 
--->
+
 
 ## Desenvolvimento Aula 
 
