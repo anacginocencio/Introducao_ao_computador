@@ -5,5 +5,5 @@
 - [Representação de caracteres, imagens e sons - 3h](documentos/aula4.md)
 
 ## Simuladores
-- [Simulador Camimho Digitação até Armazenamento](documentos/Simulador_caminho_digitacao.md)
-- [Simulador Som](documentos/Simulador_som.md)
+- [Simulador Camimho Digitação até Armazenamento](documentos/Simulador-digitacao.md)
+- [Simulador Som](documentos/Simulador-som.md)
