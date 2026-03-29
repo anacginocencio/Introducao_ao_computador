@@ -5,5 +5,5 @@
 - [Representação de caracteres, imagens e sons - 3h](documentos/aula4.md)
 
 ## Simuladores
-- [Simulador Camimho Digitação até Armazenamento](documentos/simulador_tecla_ate_armazenamento_offline.html)
+- [Simulador Camimho Digitação até Armazenamento](https://anacginocencio.github.io/Introducao_ao_computador/documentos/simulador_tecla_ate_armazenamento_offline.html)
 - [Simulador Som](documentos/Simulador-som.md)
