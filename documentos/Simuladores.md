@@ -1,3 +1,2 @@
 ## Simuladores
-- [Simulador Camimho Digitação até Armazenamento](documentos/Simulador-digitacao.md)
-- [Simulador Som](documentos/Simulador-som.md)
+- [Simulador Camimho Digitação até Armazenamento](documentos/simulador_tecla_ate_armazenamento_offline.html)
