@@ -6,4 +6,4 @@
 
 ## Simuladores
 - [Simulador Caminho Digitação até Armazenamento](https://anacginocencio.github.io/Introducao_ao_computador/docs/documentos/simulador_tecla_ate_armazenamento_offline.html)
-- [Simulador Som](https://anacginocencio.github.io/Introducao_ao_computador/docs/documentos/simulador_som_offline.html)
+- [Simulador Som](https://anacginocencio.github.io/Introducao_ao_computador/documentos/simulador_som_offline.html)
