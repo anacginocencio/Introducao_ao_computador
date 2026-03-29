@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador Offline - Som e Ondas</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    h1 { margin-bottom: 8px; }
+    .subtitle { color: #475569; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+    .card { background: white; border-radius: 18px; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08); padding: 18px; }
+    .control { margin-bottom: 18px; }
+    .control label { display: block; font-weight: bold; margin-bottom: 6px; }
+    .value { color: #334155; margin-bottom: 6px; }
+    input[type=range] { width: 100%; }
+    .toggles label { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-weight: normal; }
+    button { background: #2563eb; color: white; border: none; padding: 10px 14px; border-radius: 10px; cursor: pointer; margin-right: 8px; }
+    button.secondary { background: #64748b; }
+    canvas { width: 100%; background: white; border-radius: 14px; border: 1px solid #cbd5e1; display: block; }
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+    .info { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; font-size: 14px; line-height: 1.5; }
+    .sequence { margin-top: 16px; background: #f8fafc; border-radius: 14px; padding: 14px; border: 1px solid #e2e8f0; }
+    .mono { font-family: "Courier New", monospace; background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-top: 8px; overflow-wrap: anywhere; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .info-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Simulador Offline: como o computador entende o som</h1>
+    <div class="subtitle">Este arquivo funciona offline. Basta abrir com duplo clique no navegador.</div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="control">
+          <label for="freq">Frequência da onda</label>
+          <div class="value"><span id="freqVal">2</span> ciclos</div>
+          <input id="freq" type="range" min="1" max="8" step="1" value="2">
+        </div>
+
+        <div class="control">
+          <label for="samples">Taxa de amostragem</label>
+          <div class="value"><span id="samplesVal">24</span> amostras</div>
+          <input id="samples" type="range" min="6" max="64" step="1" value="24">
+        </div>
+
+        <div class="control">
+          <label for="quant">Níveis de quantização</label>
+          <div class="value"><span id="quantVal">8</span> níveis</div>
+          <input id="quant" type="range" min="2" max="32" step="1" value="8">
+        </div>
+
+        <div class="toggles">
+          <label><input id="showSamples" type="checkbox" checked> Mostrar amostras</label>
+          <label><input id="showQuant" type="checkbox" checked> Mostrar quantização</label>
+        </div>
+
+        <div style="margin-top:16px;">
+          <button id="animateBtn">Iniciar animação</button>
+          <button id="resetBtn" class="secondary">Reiniciar</button>
+        </div>
+
+        <div class="info" style="margin-top:16px;">
+          <strong>Dica didática:</strong> aumente a frequência, reduza a amostragem e depois diminua a quantização.
+          A representação digital vai se afastando da onda original.
+        </div>
+      </div>
+
+      <div class="card">
+        <canvas id="canvas" width="760" height="420"></canvas>
+
+        <div class="info-grid">
+          <div class="info">
+            <strong>1. Onda sonora</strong><br>
+            A curva preta representa o som contínuo no mundo físico.
+          </div>
+          <div class="info">
+            <strong>2. Amostragem</strong><br>
+            Os pontos azuis mostram onde o computador mede a onda.
+          </div>
+          <div class="info">
+            <strong>3. Quantização</strong><br>
+            A linha roxa em degraus mostra como os valores são arredondados para níveis discretos.
+          </div>
+        </div>
+
+        <div class="sequence">
+          <strong>Como o computador guarda esse som</strong>
+          <div class="mono" id="sequenceBox">[ ]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const freq = document.getElementById('freq');
+    const samples = document.getElementById('samples');
+    const quant = document.getElementById('quant');
+    const showSamples = document.getElementById('showSamples');
+    const showQuant = document.getElementById('showQuant');
+    const animateBtn = document.getElementById('animateBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const freqVal = document.getElementById('freqVal');
+    const samplesVal = document.getElementById('samplesVal');
+    const quantVal = document.getElementById('quantVal');
+    const sequenceBox = document.getElementById('sequenceBox');
+
+    let phase = 0;
+    let animating = false;
+    let animationId = null;
+
+    function updateLabels() {
+      freqVal.textContent = freq.value;
+      samplesVal.textContent = samples.value;
+      quantVal.textContent = quant.value;
+    }
+
+    function waveValue(t) {
+      return Math.sin(2 * Math.PI * Number(freq.value) * t + phase);
+    }
+
+    function draw() {
+      updateLabels();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const w = canvas.width;
+      const h = canvas.height;
+      const centerY = h / 2;
+      const amp = 120;
+
+      ctx.strokeStyle = '#94a3b8';
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath();
+      ctx.moveTo(0, centerY);
+      ctx.lineTo(w, centerY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let x = 0; x <= w; x++) {
+        const t = x / w;
+        const y = centerY - waveValue(t) * amp;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      const samplePoints = [];
+      const n = Number(samples.value);
+      for (let i = 0; i <= n; i++) {
+        const t = i / n;
+        const x = t * w;
+        const v = waveValue(t);
+        const y = centerY - v * amp;
+        samplePoints.push({x, y, v});
+      }
+
+      if (showSamples.checked) {
+        ctx.fillStyle = '#0284c7';
+        ctx.strokeStyle = '#cbd5e1';
+        for (const p of samplePoints) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, centerY);
+          ctx.lineTo(p.x, h - 10);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      const levels = Number(quant.value);
+      const qIndices = [];
+      const quantized = samplePoints.map(p => {
+        const normalized = (p.v + 1) / 2;
+        const qIndex = Math.round(normalized * (levels - 1));
+        qIndices.push(qIndex);
+        const qNorm = qIndex / (levels - 1);
+        const qValue = qNorm * 2 - 1;
+        const y = centerY - qValue * amp;
+        return {x: p.x, y, qIndex};
+      });
+
+      if (showQuant.checked) {
+        ctx.strokeStyle = '#7c3aed';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let i = 0; i < quantized.length; i++) {
+          const p = quantized[i];
+          if (i === 0) ctx.moveTo(p.x, p.y);
+          else {
+            ctx.lineTo(p.x, quantized[i - 1].y);
+            ctx.lineTo(p.x, p.y);
+          }
+        }
+        ctx.stroke();
+
+        ctx.fillStyle = '#7c3aed';
+        for (const p of quantized) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.fillStyle = '#334155';
+      ctx.font = '16px Arial';
+      ctx.fillText('Onda contínua', 12, 24);
+      if (showQuant.checked) ctx.fillText('Representação quantizada', 150, 24);
+
+      sequenceBox.textContent = '[' + qIndices.slice(0, 16).join(', ') + (qIndices.length > 16 ? ', ...' : '') + ']';
+    }
+
+    function animate() {
+      if (!animating) return;
+      phase += 0.08;
+      draw();
+      animationId = requestAnimationFrame(animate);
+    }
+
+    animateBtn.addEventListener('click', () => {
+      animating = !animating;
+      animateBtn.textContent = animating ? 'Parar animação' : 'Iniciar animação';
+      if (animating) animate();
+      else cancelAnimationFrame(animationId);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      phase = 0;
+      draw();
+    });
+
+    [freq, samples, quant, showSamples, showQuant].forEach(el => {
+      el.addEventListener('input', draw);
+      el.addEventListener('change', draw);
+    });
+
+    draw();
+  </script>
+</body>
+</html>
