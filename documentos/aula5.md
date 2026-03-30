@@ -7,10 +7,11 @@
 
 ###  Materiais extras
 
+<!-- 
 #### Vídeo Aula 5
 [![Representações de caracteres, imagens e sons - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/4BlZyEeNXN8)
 
-
+-->
 
 ## Desenvolvimento Aula 
 
