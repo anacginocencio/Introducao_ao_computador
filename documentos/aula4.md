@@ -7,7 +7,7 @@
 
 ###  Materiais extras
 
-#### Vídeo 1 - Vídeo curto Aula Conversão entre bases e operações binárias
+#### Vídeo Aula Representações de caracteres, imagens e sons
 [![Representações de caracteres, imagens e sons - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/4BlZyEeNXN8)
 
 
