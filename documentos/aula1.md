@@ -7,7 +7,7 @@
 
 ###  Materiais extras
 
-#### Vídeo 1 - Vídeo curto Aula Introdução
+#### Vídeo Aula Introdução
 [![Introdução - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/1rb9JQev7L4)
 
 
