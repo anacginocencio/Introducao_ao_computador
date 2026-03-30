@@ -7,7 +7,7 @@
 
 ###  Materiais extras
 
-#### Vídeo 2 - Vídeo curto Aula Sistemas de Numeração
+#### Vídeo Aula Sistemas de Numeração
 [![Sistemas de Numeração - Aula Rápida](CAPA_AULAS.png)](https://youtu.be/pftzoWJbtNc)
 
 
