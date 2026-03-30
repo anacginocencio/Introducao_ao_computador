@@ -7,11 +7,10 @@
 
 ###  Materiais extras
 
-<!-- 
-#### Vídeo Aula 5
-[![Representações de caracteres, imagens e sons - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/4BlZyEeNXN8)
 
--->
+#### Vídeo Aula 5
+[![Armazenamento, Hierarquia de Memória e Barramentos - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/f5yunhp6kT4)
+
 
 ## Desenvolvimento Aula 
 
