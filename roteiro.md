@@ -4,3 +4,4 @@
 - [Conversões entre bases e operações binárias - 3h](documentos/aula3.md)
 - [Representação de caracteres, imagens e sons - 3h](documentos/aula4.md)
 - [Armazenamento, Hierarquia de memória e Barramentos - 3h](documentos/aula5.md)
+- [Organização Básica da arquitetura de computadores Modelo Von Neumann - 3h](documentos/aula6.md)
