@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Missão Von Neumann - Simulador Lúdico</title>
+  <style>
+    :root{
+      --bg1:#fff4d9; --bg2:#ffe7c2; --card:#ffffff; --ink:#2f2a25; --muted:#6f675f;
+      --cpu:#6cc070; --mem:#6da8ff; --bus:#ffb44d; --ula:#b084ff; --io:#ff7f7f;
+      --ok:#33a852; --line:#e6d7bf; --shadow:0 10px 24px rgba(0,0,0,.10); --radius:20px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:radial-gradient(circle at top left,#fff9ea 0%,transparent 30%),linear-gradient(180deg,var(--bg1),var(--bg2))}
+    .wrap{max-width:1380px;margin:0 auto;padding:20px}
+    h1{margin:0;text-align:center;font-size:2.1rem}
+    .subtitle{max-width:1000px;margin:10px auto 18px;text-align:center;color:var(--muted);line-height:1.55;font-size:1rem}
+    .toolbar,.panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .toolbar{padding:14px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:end;margin-bottom:18px}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:.94rem;font-weight:700}
+    input,select{min-width:110px;border:2px solid #eadac4;border-radius:14px;padding:11px 12px;font-size:1rem;background:#fff}
+    button{border:0;border-radius:999px;padding:12px 18px;font-size:1rem;font-weight:800;cursor:pointer;box-shadow:0 7px 16px rgba(0,0,0,.12)}
+    .primary{background:var(--ok);color:#fff}.secondary{background:#4f8df5;color:#fff}.ghost{background:#f2eee7;color:var(--ink)} button:disabled{opacity:.55;cursor:not-allowed}
+    .layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:18px}
+    .sim{padding:18px}
+    .canvas{position:relative;min-height:820px;border:2px solid var(--line);border-radius:24px;padding:18px;background:linear-gradient(180deg,#fffef9 0%, #fff7eb 100%);overflow:hidden}
+    .legendTop{text-align:center;color:var(--muted);margin-bottom:14px;font-size:.98rem}
+    .world{position:relative;min-height:620px;display:grid;grid-template-columns:280px 1fr 250px;gap:16px;align-items:start}
+    .col{display:grid;gap:14px}
+    .character{border-radius:22px;padding:16px;color:#fff;box-shadow:var(--shadow);min-height:140px;position:relative;overflow:hidden}
+    .memory{background:linear-gradient(145deg,#79b2ff,#4e8ff8)} .cpu{background:linear-gradient(145deg,#79d27d,#47a94b)} .ula{background:linear-gradient(145deg,#c09cff,#8e63eb)} .io{background:linear-gradient(145deg,#ff9a9a,#ee6767)} .busnote{background:linear-gradient(145deg,#ffc468,#f3a634)}
+    .character h3{margin:0 0 8px;font-size:1.08rem}.character p{margin:0;line-height:1.45;font-size:.94rem}
+    .face{position:absolute;right:10px;bottom:10px;font-size:1.9rem;opacity:.95}
+    .slots{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+    .slot{background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.28);border-radius:12px;padding:8px 10px;min-width:70px;text-align:center;font-weight:800;font-size:.92rem}
+    .center{position:relative;min-height:620px;border-radius:22px;background:rgba(0,0,0,.03);padding:18px}
+    .cpuCore{max-width:340px;margin:0 auto 18px}
+    .busRoad{position:relative;width:min(100%,600px);height:72px;margin:18px auto;border-radius:999px;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:inset 0 0 0 2px rgba(255,255,255,.16),0 8px 18px rgba(0,0,0,.12);overflow:hidden;padding:0 90px}
+    .road1{background:linear-gradient(90deg,#62b46a,#4ca355)} .road2{background:linear-gradient(90deg,#ffbb5a,#ee9e2a)} .road3{background:linear-gradient(90deg,#75aef7,#4d8ff2)}
+    .busRoad h4{margin:0;font-size:.95rem}.busRoad small{display:block;margin-top:4px;font-size:.72rem;font-weight:700}
+    .lane{position:absolute;inset:0;overflow:hidden}
+    .traveler{position:absolute;top:50%;transform:translate(-150%,-50%);width:78px;height:78px;display:grid;place-items:center;font-size:2.3rem;opacity:0;filter:drop-shadow(0 6px 8px rgba(0,0,0,.18))}
+    .traveler.active{opacity:1;animation:go var(--dur,1.8s) linear forwards}.traveler.reverse.active{animation:back var(--dur,1.8s) linear forwards}
+    @keyframes go{0%{transform:translate(-150%,-50%);opacity:0}8%{opacity:1}100%{transform:translate(920%,-50%);opacity:1}}
+    @keyframes back{0%{transform:translate(920%,-50%);opacity:0}8%{opacity:1}100%{transform:translate(-150%,-50%);opacity:1}}
+    .bubble{position:absolute;max-width:220px;background:#fff;border:2px solid #eadcc7;border-radius:18px;padding:10px 12px;box-shadow:0 8px 16px rgba(0,0,0,.10);font-size:.92rem;line-height:1.35}
+    .bubble:after{content:'';position:absolute;left:20px;bottom:-12px;width:20px;height:20px;background:#fff;border-right:2px solid #eadcc7;border-bottom:2px solid #eadcc7;transform:rotate(45deg)}
+    .packet{position:absolute;width:106px;height:126px;background:#fff;border:3px solid #dacdbd;border-radius:16px;box-shadow:0 10px 18px rgba(0,0,0,.13);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;font-weight:800;z-index:5;transition:left .9s ease, top .9s ease, transform .9s ease}
+    .packet::before{content:'';position:absolute;right:-3px;top:-3px;width:28px;height:28px;background:linear-gradient(135deg,#efe7db 50%, #d4c8b9 50%);clip-path:polygon(0 0,100% 0,100% 100%);border-top-right-radius:10px}
+    .packet small{font-size:.72rem;color:var(--muted);padding:0 4px}
+    .steps{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-top:18px}
+    .step{background:#fff;border:2px solid #eadcc7;border-radius:14px;padding:10px;min-height:90px;font-size:.86rem}
+    .step strong{display:block;margin-bottom:5px}.step span{color:var(--muted);line-height:1.35}.step.active{border-color:var(--ok);box-shadow:0 0 0 4px rgba(51,168,82,.14)}
+    .side{display:grid;gap:18px;align-content:start}.side .panel{padding:16px}
+    .status{background:#f6fbf6;border-left:6px solid var(--ok);border-radius:12px;padding:12px 14px;line-height:1.58;min-height:110px}
+    .explain{line-height:1.58}
+    .badges{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .badge{background:#fff8ef;border:1px solid #eedfca;border-radius:12px;padding:10px;font-size:.94rem}
+    .footer{text-align:center;color:var(--muted);margin-top:14px;font-size:.92rem}
+    @media (max-width:1200px){.layout{grid-template-columns:1fr}}
+    @media (max-width:980px){.world{grid-template-columns:1fr}.steps{grid-template-columns:1fr}.canvas{min-height:auto}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Missão Von Neumann</h1>
+    <div class="subtitle">
+      Um simulador mais lúdico para <b>Educação Básica</b> e, ao mesmo tempo, útil para discussão conceitual no <b>mestrado</b>.
+      Digite dois números, escolha a operação e acompanhe a aventura da instrução e dos dados dentro do computador.
+    </div>
+
+    <div class="toolbar">
+      <div class="field"><label for="n1">Número 1</label><input id="n1" type="number" value="7"></div>
+      <div class="field"><label for="op">Operação</label><select id="op"><option value="+">Soma (+)</option><option value="-">Subtração (-)</option><option value="*">Multiplicação (×)</option><option value="/">Divisão (÷)</option></select></div>
+      <div class="field"><label for="n2">Número 2</label><input id="n2" type="number" value="3"></div>
+      <div class="field"><label for="speed">Velocidade</label><input id="speed" type="range" min="0.8" max="2.0" step="0.1" value="1.2"></div>
+      <div class="field"><label>&nbsp;</label><div id="speedLabel">1.2x</div></div>
+      <button class="primary" id="playBtn">▶ Iniciar missão</button>
+      <button class="secondary" id="nextBtn">⏭ Próximo passo</button>
+      <button class="ghost" id="resetBtn">↺ Reiniciar</button>
+    </div>
+
+    <div class="layout">
+      <section class="panel sim">
+        <div class="canvas">
+          <div class="legendTop">Aqui a turma vê o princípio do modelo: <b>dados + instrução na mesma memória</b> e <b>CPU executando em ciclo</b>.</div>
+
+          <div class="world">
+            <div class="col">
+              <div class="character memory">
+                <h3>Memória 📚</h3>
+                <p>Guarda ao mesmo tempo os <b>dados</b> e a <b>instrução</b>. Esse é o coração do modelo de Von Neumann.</p>
+                <div class="slots"><div class="slot" id="mem1">A=7</div><div class="slot" id="mem2">B=3</div><div class="slot" id="memI">A+B</div></div>
+                <div class="face">😊</div>
+              </div>
+
+              <div class="character io">
+                <h3>Entrada 🎮</h3>
+                <p>O usuário envia os números e escolhe a operação. A aventura começa aqui.</p>
+                <div class="slots"><div class="slot" id="inputText">7 + 3</div></div>
+                <div class="face">⌨️</div>
+              </div>
+
+              <div class="character io">
+                <h3>Saída 🖥️</h3>
+                <p>Depois da execução, o resultado é mostrado para o usuário.</p>
+                <div class="slots"><div class="slot" id="outputText">Resultado=?</div></div>
+                <div class="face">✨</div>
+              </div>
+            </div>
+
+            <div class="center">
+              <div class="character cpu cpuCore">
+                <h3>CPU 🧠</h3>
+                <p>A CPU trabalha em três etapas: <b>buscar</b>, <b>decodificar</b> e <b>executar</b>.</p>
+                <div class="slots"><div class="slot" id="ucBox">UC</div><div class="slot" id="ulaBox">ULA</div><div class="slot" id="regBox">REG</div></div>
+                <div class="face">🤖</div>
+              </div>
+
+              <div class="busRoad road1">
+                <div class="lane"><div class="traveler" id="trav1">📍</div></div>
+                <div><h4>Estrada do Endereço</h4><small>Mostra onde buscar a instrução e os dados</small></div>
+              </div>
+
+              <div class="busRoad road2">
+                <div class="lane"><div class="traveler" id="trav2">📢</div></div>
+                <div><h4>Estrada do Controle</h4><small>Diz o que precisa ser feito: ler, executar, gravar</small></div>
+              </div>
+
+              <div class="busRoad road3">
+                <div class="lane"><div class="traveler reverse" id="trav3">📦</div></div>
+                <div><h4>Estrada dos Dados</h4><small>Transporta instrução, números e resultado</small></div>
+              </div>
+
+              <div class="bubble" id="speech" style="left:22px; top:18px;">Olá! Eu vou mostrar como o computador resolve a operação.</div>
+
+              <div class="packet" id="packet" style="left:22px; top:112px;">
+                📄
+                <div>Missão</div>
+                <small>A + B</small>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="character busnote"><h3>ULA ✨</h3><p>É a parte da CPU que faz a conta de verdade.</p><div class="face">➕</div></div>
+              <div class="character ula"><h3>Registradores ⚡</h3><p>Guardam rapidamente os números que a CPU vai usar naquele instante.</p><div class="face">📥</div></div>
+              <div class="character cpu"><h3>Unidade de Controle 🎯</h3><p>Organiza o fluxo: primeiro busca, depois entende, e então manda executar.</p><div class="face">🕹️</div></div>
+            </div>
+          </div>
+
+          <div class="steps">
+            <div class="step" id="step1"><strong>1. Entrada</strong><span>Os números e a operação chegam ao sistema.</span></div>
+            <div class="step" id="step2"><strong>2. Memória</strong><span>Dados e instrução ficam guardados juntos.</span></div>
+            <div class="step" id="step3"><strong>3. Buscar</strong><span>A CPU procura a instrução.</span></div>
+            <div class="step" id="step4"><strong>4. Decodificar</strong><span>A UC entende qual operação deve ocorrer.</span></div>
+            <div class="step" id="step5"><strong>5. Buscar dados</strong><span>A CPU pega os operandos na memória.</span></div>
+            <div class="step" id="step6"><strong>6. Executar</strong><span>A ULA faz a conta.</span></div>
+            <div class="step" id="step7"><strong>7. Guardar</strong><span>O resultado pode voltar à memória.</span></div>
+            <div class="step" id="step8"><strong>8. Mostrar</strong><span>O resultado aparece para o usuário.</span></div>
+          </div>
+
+          <div class="footer">Versão lúdica pensada para ser visualmente amigável sem perder a precisão conceitual.</div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <section class="panel"><h3>Status da missão</h3><div class="status" id="statusBox">Pronto para começar. Digite dois números, escolha uma operação e clique em <b>Iniciar missão</b>.</div></section>
+        <section class="panel"><h3>Explicação para a aula</h3><div class="explain" id="explainBox">Neste simulador, a mesma memória guarda os números e a instrução da operação. Isso ajuda a explicar, de forma visual, o princípio do modelo de Von Neumann.</div></section>
+        <section class="panel"><h3>Painel rápido</h3><div class="badges"><div class="badge"><b>Instrução</b><br><span id="instTxt">A + B</span></div><div class="badge"><b>ULA</b><br><span id="ulaTxt">Aguardando</span></div><div class="badge"><b>Registradores</b><br><span id="regTxt">Vazios</span></div><div class="badge"><b>Resultado</b><br><span id="resTxt">?</span></div></div></section>
+        <section class="panel"><h3>Como usar em aula</h3><div class="explain"><ul><li>Para a Educação Básica, use a ideia de “aventura” e “estradas”.</li><li>No mestrado, destaque que a ludicidade traduz a arquitetura em uma narrativa compreensível.</li><li>Peça aos alunos que antecipem o próximo passo antes de clicar.</li></ul></div></section>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const n1=document.getElementById('n1'), n2=document.getElementById('n2'), op=document.getElementById('op'), speed=document.getElementById('speed'), speedLabel=document.getElementById('speedLabel');
+    const mem1=document.getElementById('mem1'), mem2=document.getElementById('mem2'), memI=document.getElementById('memI'), inputText=document.getElementById('inputText'), outputText=document.getElementById('outputText');
+    const statusBox=document.getElementById('statusBox'), explainBox=document.getElementById('explainBox'), instTxt=document.getElementById('instTxt'), ulaTxt=document.getElementById('ulaTxt'), regTxt=document.getElementById('regTxt'), resTxt=document.getElementById('resTxt');
+    const speech=document.getElementById('speech'), packet=document.getElementById('packet'), trav1=document.getElementById('trav1'), trav2=document.getElementById('trav2'), trav3=document.getElementById('trav3');
+    const ucBox=document.getElementById('ucBox'), ulaBox=document.getElementById('ulaBox');
+    const stepEls=Array.from({length:8},(_,i)=>document.getElementById('step'+(i+1)));
+    const playBtn=document.getElementById('playBtn'), nextBtn=document.getElementById('nextBtn'), resetBtn=document.getElementById('resetBtn');
+    let auto=false, timer=null, stepIndex=0, state={};
+
+    function opPretty(o){ return o==='*' ? '×' : o==='/' ? '÷' : o; }
+    function compute(a,b,o){ if(o==='+') return a+b; if(o==='-') return a-b; if(o==='*') return a*b; if(o==='/') return b===0 ? 'Indefinido' : a/b; return '?'; }
+    function dur(){ return Math.max(700,1800/parseFloat(speed.value)); }
+    function setBubble(text){ speech.textContent=text; }
+    function animateTraveler(el,reverse=false,icon=null){ el.classList.remove('active','reverse'); if(reverse) el.classList.add('reverse'); if(icon) el.textContent=icon; el.style.setProperty('--dur',(dur()/1000).toFixed(2)+'s'); void el.offsetWidth; el.classList.add('active'); }
+    function clearTravelers(){ [trav1,trav2,trav3].forEach(t=>t.classList.remove('active','reverse')); }
+    function movePacket(left,top,scale=1,title='Missão',small='A + B'){ packet.style.left=left+'px'; packet.style.top=top+'px'; packet.style.transform='scale('+scale+')'; packet.innerHTML='📄<div>'+title+'</div><small>'+small+'</small>'; }
+    function activateStep(i){ stepEls.forEach((el,idx)=>el.classList.toggle('active',idx===i)); }
+    function loadInputs(){
+      const a=Number(n1.value), b=Number(n2.value), o=op.value, opTxt=opPretty(o), r=compute(a,b,o);
+      state={a,b,o,opTxt,r};
+      mem1.textContent='A='+a; mem2.textContent='B='+b; memI.textContent='A'+opTxt+'B';
+      inputText.textContent=a+' '+opTxt+' '+b; outputText.textContent='Resultado=?';
+      instTxt.textContent='A '+opTxt+' B'; ulaTxt.textContent='Aguardando'; regTxt.textContent='Vazios'; resTxt.textContent='?';
+    }
+
+    const steps=[
+      {status:'Passo 1: os números e a operação entram no sistema.', explain:'O usuário faz a entrada. A máquina ainda não calculou nada; ela apenas recebeu os elementos da missão.', bubble:'Recebi a missão! Agora vou guardar os números e a operação.', action:()=>{loadInputs(); clearTravelers(); movePacket(24,278,1,'Entrada',state.a+' '+state.opTxt+' '+state.b); activateStep(0);}},
+      {status:'Passo 2: memória guarda dados e instrução juntos.', explain:'No modelo de Von Neumann, a mesma memória armazena os operandos e a instrução. Esse é o ponto-chave da arquitetura.', bubble:'Na memória, ficam juntos os números e a instrução da operação.', action:()=>{movePacket(22,108,1,'Memória','A '+state.opTxt+' B'); activateStep(1);}},
+      {status:'Passo 3: a CPU busca a instrução.', explain:'A CPU primeiro precisa descobrir qual tarefa deve executar. Por isso ela busca a instrução na memória.', bubble:'Primeiro vou descobrir qual conta preciso fazer.', action:()=>{animateTraveler(trav1,false,'📍'); animateTraveler(trav2,false,'📢'); animateTraveler(trav3,true,'📜'); movePacket(362,58,0.94,'Instrução','A '+state.opTxt+' B'); activateStep(2);}},
+      {status:'Passo 4: a Unidade de Controle decodifica a instrução.', explain:'A UC interpreta o comando. Agora a CPU sabe se deve somar, subtrair, multiplicar ou dividir.', bubble:'A Unidade de Controle entendeu a missão!', action:()=>{clearTravelers(); ucBox.style.outline='4px solid rgba(255,255,255,.6)'; setTimeout(()=>ucBox.style.outline='none',dur()); ulaTxt.textContent='Operação: '+state.opTxt; movePacket(362,58,0.94,'UC','decodificando'); activateStep(3);}},
+      {status:'Passo 5: a CPU busca os dados A e B.', explain:'Depois de entender a instrução, a CPU vai à memória buscar os operandos que serão usados na conta.', bubble:'Agora vou buscar os números para fazer a conta.', action:()=>{animateTraveler(trav1,false,'📍'); animateTraveler(trav2,false,'📢'); animateTraveler(trav3,true,'📦'); regTxt.textContent='A='+state.a+' | B='+state.b; movePacket(362,58,0.94,'Dados',state.a+' e '+state.b); activateStep(4);}},
+      {status:'Passo 6: a ULA executa a operação.', explain:'A ULA é a parte da CPU que realmente faz a conta. Aqui acontece a execução.', bubble:'Hora de calcular!', action:()=>{clearTravelers(); ulaBox.style.outline='4px solid rgba(255,255,255,.6)'; setTimeout(()=>ulaBox.style.outline='none',dur()); ulaTxt.textContent=state.a+' '+state.opTxt+' '+state.b; resTxt.textContent=String(state.r); movePacket(362,58,0.94,'ULA',String(state.r)); activateStep(5);}},
+      {status:'Passo 7: o resultado pode voltar à memória.', explain:'Depois da execução, o resultado pode ser armazenado novamente para uso posterior por outros programas ou instruções.', bubble:'Vou guardar o resultado para não perder.', action:()=>{animateTraveler(trav2,false,'💾'); animateTraveler(trav3,false,'📦'); outputText.textContent='Resultado='+state.r; movePacket(22,108,1,'Resultado',String(state.r)); activateStep(6);}},
+      {status:'Passo 8: o resultado aparece para o usuário.', explain:'O usuário finalmente vê o resultado. O processo parece simples, mas por trás houve todo um fluxo organizado.', bubble:'Missão concluída! Resultado entregue ao usuário.', action:()=>{clearTravelers(); movePacket(22,460,1,'Saída',String(state.r)); outputText.textContent='Resultado='+state.r; activateStep(7);}}
+    ];
+
+    function showStep(i){ if(i<0 || i>=steps.length) return; const s=steps[i]; s.action(); statusBox.innerHTML=s.status; explainBox.innerHTML=s.explain; setBubble(s.bubble); }
+    function nextStep(){ if(stepIndex>=steps.length){ stopAuto(); return; } showStep(stepIndex); stepIndex++; }
+    function startAuto(){ if(auto) return; auto=true; playBtn.disabled=true; nextBtn.disabled=true; nextStep(); timer=setInterval(()=>{ if(stepIndex>=steps.length){ stopAuto(); return; } nextStep(); }, dur()+900); }
+    function stopAuto(){ auto=false; playBtn.disabled=false; nextBtn.disabled=false; if(timer){ clearInterval(timer); timer=null; } }
+    function resetSim(){ stopAuto(); stepIndex=0; loadInputs(); clearTravelers(); movePacket(22,112,1,'Missão','A '+state.opTxt+' B'); activateStep(-1); setBubble('Olá! Eu vou mostrar como o computador resolve a operação.'); statusBox.innerHTML='Pronto para começar. Digite dois números, escolha uma operação e clique em <b>Iniciar missão</b>.'; explainBox.innerHTML='Neste simulador, a mesma memória guarda os números e a instrução da operação. Isso ajuda a explicar, de forma visual, o princípio do modelo de Von Neumann.'; outputText.textContent='Resultado=?'; }
+
+    speed.addEventListener('input',()=>{ speedLabel.textContent=parseFloat(speed.value).toFixed(1)+'x'; });
+    [n1,n2].forEach(el=>el.addEventListener('input',resetSim)); op.addEventListener('change',resetSim);
+    playBtn.addEventListener('click',startAuto);
+    nextBtn.addEventListener('click',()=>{ if(auto) return; if(stepIndex===0) loadInputs(); nextStep(); });
+    resetBtn.addEventListener('click',resetSim);
+    resetSim();
+  </script>
+</body>
+</html>
