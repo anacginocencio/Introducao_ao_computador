@@ -9,7 +9,10 @@
 
 
 #### Vídeo Aula 6
-[![Armazenamento, Hierarquia de Memória e Barramentos - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/2-LZ-AjNkzk)
+[![Organizacao basica de computadores - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/2-LZ-AjNkzk)
+
+#### Animação Processador
+[![Animacao processador](processador.png)](https://www.youtube.com/watch?v=DnGo1c6qPG0&t=5s)
 
 
 ## Desenvolvimento Aula 
