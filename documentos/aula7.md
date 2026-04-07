@@ -6,12 +6,10 @@
   
 
 ###  Materiais extras
-
-
+<!--
 #### Vídeo Aula 6
 [![CPU, Unidade de Controle, Unidade Lógica Aritmética e Registradores - Aula Rapida](CAPA_AULAS.png)]()
-
-
+-->
 
 ## Desenvolvimento Aula 
 
