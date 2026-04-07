@@ -9,7 +9,7 @@
 
 
 #### Vídeo Aula 6
-[![Armazenamento, Hierarquia de Memória e Barramentos - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/f5yunhp6kT4)
+[![Armazenamento, Hierarquia de Memória e Barramentos - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/2-LZ-AjNkzk)
 
 
 ## Desenvolvimento Aula 
