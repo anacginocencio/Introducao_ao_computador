@@ -1,546 +1,1031 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador: Caminho dos Dados</title>
 
-const ICONS = {
-  camera: "📷",
-  sensor: "🌈",
-  memory: "🧠",
-  cpu: "⚙️",
-  screen: "📱",
-  drive: "💾",
-  cloud: "☁️",
-  play: "▶",
-  pause: "⏸",
-  reset: "↺",
-  next: "⏭",
-  question: "?",
-  teacher: "🎓",
-  layers: "▦",
-  check: "✓",
-  warning: "⚠",
-  brain: "✦",
-  gauge: "◉",
-  sparkle: "✧",
-};
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-const etapas = [
-  {
-    id: 1,
-    titulo: "Câmera captura luz",
-    subtitulo: "Entrada",
-    componente: "Câmera",
-    icon: "camera",
-    cor: "cyan",
-    acento: "from-cyan-400 to-blue-500",
-    descricao: "A câmera recebe luz do ambiente. Para o computador, ainda não existe foto: existe um sinal físico que precisa ser convertido.",
-    dado: "Luz do ambiente",
-    professor: "Comece perguntando: a foto já nasce como arquivo? A resposta abre espaço para discutir entrada, sinal físico e representação digital.",
-    pergunta: "O que entra primeiro no sistema: a imagem pronta ou a luz refletida pelos objetos?",
-    erro: "Pensar que a câmera já produz imediatamente um arquivo final.",
-  },
-  {
-    id: 2,
-    titulo: "Sensor converte sinais em dados",
-    subtitulo: "Digitalização",
-    componente: "Sensor de imagem",
-    icon: "sensor",
-    cor: "blue",
-    acento: "from-blue-400 to-indigo-500",
-    descricao: "O sensor transforma intensidades de luz em valores numéricos. A realidade contínua é amostrada em pixels e codificada em bits.",
-    dado: "Pixels + valores RGB",
-    professor: "Use a metáfora do mosaico: a foto digital é uma grade de pequenos quadrados, cada um com números que representam cor e brilho.",
-    pergunta: "Quando a realidade vira números, o que se ganha e o que se perde?",
-    erro: "Confundir imagem digital com cópia perfeita da realidade.",
-  },
-  {
-    id: 3,
-    titulo: "Dados passam pela memória principal",
-    subtitulo: "Memória temporária",
-    componente: "RAM",
-    icon: "memory",
-    cor: "emerald",
-    acento: "from-emerald-400 to-lime-500",
-    descricao: "Os dados temporários da foto ficam na RAM para serem rapidamente acessados durante o processamento.",
-    dado: "Imagem temporária em processamento",
-    professor: "Diferencie guardar para usar agora e guardar para manter depois. RAM é mesa de trabalho, armazenamento interno é arquivo permanente.",
-    pergunta: "Por que a foto precisa passar pela memória antes de ser salva?",
-    erro: "Achar que toda memória é permanente.",
-  },
-  {
-    id: 4,
-    titulo: "Processador aplica ajustes",
-    subtitulo: "Processamento",
-    componente: "CPU/ISP",
-    icon: "cpu",
-    cor: "amber",
-    acento: "from-amber-400 to-orange-600",
-    descricao: "O processador e o ISP ajustam foco, cor, brilho, nitidez e compressão. O dado é transformado por instruções.",
-    dado: "Imagem melhorada e comprimida",
-    professor: "Mostre que processamento não é magia: é uma sequência de operações sobre dados representados em bits.",
-    pergunta: "O celular entende a imagem ou apenas transforma números segundo regras?",
-    erro: "Atribuir compreensão humana ao processador.",
-  },
-  {
-    id: 5,
-    titulo: "Tela exibe a imagem",
-    subtitulo: "Saída",
-    componente: "Display",
-    icon: "screen",
-    cor: "violet",
-    acento: "from-violet-400 to-fuchsia-500",
-    descricao: "A tela reconstrói visualmente os dados processados, emitindo luz organizada em pixels para que humanos interpretem a foto.",
-    dado: "Imagem visível ao usuário",
-    professor: "A tela não mostra significado; ela mostra sinais visuais. Quem interpreta a foto é a pessoa.",
-    pergunta: "A tela mostra dados ou informação? Depende de quem observa?",
-    erro: "Confundir saída visual com compreensão computacional.",
-  },
-  {
-    id: 6,
-    titulo: "Arquivo salvo no armazenamento interno",
-    subtitulo: "Persistência",
-    componente: "SSD/Flash",
-    icon: "drive",
-    cor: "yellow",
-    acento: "from-yellow-300 to-amber-500",
-    descricao: "O arquivo é gravado em memória não volátil. Agora a foto permanece mesmo depois que o celular é desligado.",
-    dado: "Arquivo .jpg/.heic salvo",
-    professor: "Contraste RAM e armazenamento interno: uma serve ao trabalho imediato; o outro preserva o resultado.",
-    pergunta: "O que torna um dado temporário diferente de um arquivo salvo?",
-    erro: "Achar que salvar e processar são a mesma operação.",
-  },
-  {
-    id: 7,
-    titulo: "Foto pode ser sincronizada com a nuvem",
-    subtitulo: "Transmissão",
-    componente: "Rede/Nuvem",
-    icon: "cloud",
-    cor: "sky",
-    acento: "from-sky-300 to-cyan-500",
-    descricao: "Uma cópia pode ser enviada pela rede para servidores remotos. O dado sai do dispositivo e passa a depender de comunicação, autenticação e políticas de privacidade.",
-    dado: "Cópia remota sincronizada",
-    professor: "Finalize com cultura digital: o caminho dos dados também envolve privacidade, consentimento e segurança.",
-    pergunta: "Quando a foto vai para a nuvem, ela ainda está apenas 'no meu celular'?",
-    erro: "Ignorar que sincronização amplia circulação e riscos dos dados.",
-  },
-];
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(0, 255, 255, 0.18), transparent 35%),
+        radial-gradient(circle at top right, rgba(168, 85, 247, 0.18), transparent 35%),
+        #020617;
+      color: white;
+    }
 
-const cores = {
-  cyan: "border-cyan-400/60 bg-cyan-950/30 shadow-cyan-500/20 text-cyan-100",
-  blue: "border-blue-400/60 bg-blue-950/30 shadow-blue-500/20 text-blue-100",
-  emerald: "border-emerald-400/60 bg-emerald-950/30 shadow-emerald-500/20 text-emerald-100",
-  amber: "border-amber-400/60 bg-amber-950/30 shadow-amber-500/20 text-amber-100",
-  violet: "border-violet-400/60 bg-violet-950/30 shadow-violet-500/20 text-violet-100",
-  yellow: "border-yellow-300/60 bg-yellow-950/30 shadow-yellow-500/20 text-yellow-100",
-  sky: "border-sky-300/60 bg-sky-950/30 shadow-sky-500/20 text-sky-100",
-};
+    .container {
+      width: min(1200px, 94%);
+      margin: auto;
+      padding: 32px 0;
+    }
 
-const miniQuiz = [
-  {
-    pergunta: "Qual etapa transforma luz em valores digitais?",
-    opcoes: ["Tela", "Sensor", "Nuvem", "Armazenamento interno"],
-    correta: 1,
-    feedback: "O sensor converte sinais físicos de luz em dados digitais, geralmente organizados em pixels.",
-  },
-  {
-    pergunta: "Por que a RAM aparece antes do armazenamento interno?",
-    opcoes: ["Porque guarda dados temporários durante o processamento", "Porque é mais permanente", "Porque substitui a CPU", "Porque envia dados para a nuvem"],
-    correta: 0,
-    feedback: "A RAM funciona como memória de trabalho: rápida, temporária e usada durante a execução.",
-  },
-  {
-    pergunta: "O que a CPU/ISP faz com os dados da imagem?",
-    opcoes: ["Apenas apaga pixels", "Transforma os dados aplicando ajustes e instruções", "Guarda a foto para sempre", "É a tela do celular"],
-    correta: 1,
-    feedback: "Processamento é transformação de dados: foco, cor, brilho, nitidez, compressão e outras operações.",
-  },
-  {
-    pergunta: "Qual etapa preserva a foto mesmo quando o celular é desligado?",
-    opcoes: ["RAM", "Tela", "Armazenamento interno", "Sensor"],
-    correta: 2,
-    feedback: "O armazenamento interno é memória não volátil; por isso preserva o arquivo depois do desligamento.",
-  },
-];
+    header {
+      text-align: center;
+      padding: 32px 20px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      margin-bottom: 24px;
+    }
 
-function runSelfTests() {
-  const errors = [];
-  if (etapas.length !== 7) errors.push("O simulador deve ter 7 etapas.");
-  etapas.forEach((etapa, index) => {
-    if (etapa.id !== index + 1) errors.push(`Etapa fora de ordem: ${etapa.titulo}`);
-    if (!ICONS[etapa.icon]) errors.push(`Ícone inexistente na etapa ${etapa.id}.`);
-    if (!cores[etapa.cor]) errors.push(`Cor inexistente na etapa ${etapa.id}.`);
-  });
-  miniQuiz.forEach((q, index) => {
-    if (!Array.isArray(q.opcoes) || q.opcoes.length < 2) errors.push(`Quiz ${index + 1} precisa de pelo menos duas opções.`);
-    if (q.correta < 0 || q.correta >= q.opcoes.length) errors.push(`Quiz ${index + 1} tem resposta correta fora do intervalo.`);
-  });
-  if (errors.length) {
-    // Mantém o erro visível em desenvolvimento, sem quebrar a experiência do aluno em produção.
-    console.error("Falhas nos testes internos do simulador:", errors);
-  } else {
-    console.info("Testes internos do simulador: OK");
-  }
-  return errors;
-}
+    h1 {
+      font-size: clamp(34px, 5vw, 62px);
+      margin: 0;
+      line-height: 1;
+    }
 
-function Icon({ name, className = "", size = 24 }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`inline-flex items-center justify-center leading-none ${className}`}
-      style={{ fontSize: size, width: size, height: size }}
-    >
-      {ICONS[name] || "•"}
-    </span>
-  );
-}
+    h1 span {
+      color: #22d3ee;
+    }
 
-function Badge({ children, className = "" }) {
-  return <span className={`inline-flex items-center rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-white/80 ${className}`}>{children}</span>;
-}
+    header p {
+      color: rgba(255,255,255,0.72);
+      font-size: 18px;
+      max-width: 850px;
+      margin: 18px auto 0;
+      line-height: 1.6;
+    }
 
-function DataParticle({ active, etapaAtual, paused }) {
-  const positions = useMemo(() => etapas.map((_, i) => `${(i / (etapas.length - 1)) * 100}%`), []);
+    .simulator {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 22px;
+      margin-bottom: 24px;
+    }
 
-  return (
-    <div className="relative h-10 w-full">
-      <div className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2 overflow-hidden rounded-full bg-white/10">
-        <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-amber-300"
-          animate={{ width: active ? positions[etapaAtual - 1] : "0%" }}
-          transition={{ duration: paused ? 0 : 0.7, ease: "easeInOut" }}
-        />
-      </div>
-      {etapas.map((etapa, index) => (
-        <div key={etapa.id} className="absolute top-1/2 -translate-y-1/2" style={{ left: positions[index] }}>
-          <motion.div
-            className={`-ml-2 h-4 w-4 rounded-full border ${etapa.id <= etapaAtual ? "border-white bg-cyan-300 shadow-[0_0_18px_rgba(34,211,238,.85)]" : "border-white/20 bg-slate-800"}`}
-            animate={etapa.id === etapaAtual && active && !paused ? { scale: [1, 1.35, 1], opacity: [0.8, 1, 0.8] } : { scale: 1 }}
-            transition={{ repeat: etapa.id === etapaAtual && active && !paused ? Infinity : 0, duration: 1.1 }}
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
+    .panel {
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      background: rgba(255,255,255,0.06);
+      padding: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
 
-function EtapaCard({ etapa, ativo, concluido, onClick }) {
-  return (
-    <button onClick={() => onClick(etapa.id)} className="group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 rounded-2xl">
-      <motion.div
-        layout
-        className={`relative h-full min-h-[220px] overflow-hidden rounded-2xl border p-4 shadow-2xl transition-all duration-300 ${cores[etapa.cor]} ${ativo ? "scale-[1.02] ring-2 ring-white/40" : "opacity-75 hover:opacity-100"}`}
-      >
-        <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${etapa.acento}`} />
-        <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
-        <div className="mb-4 flex items-center justify-between">
-          <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${etapa.acento} text-slate-950 shadow-lg`}>
-            <Icon name={etapa.icon} size={28} />
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 16px;
+      padding: 12px 18px;
+      font-weight: bold;
+      cursor: pointer;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,0.2);
+    }
+
+    .primary {
+      background: #22d3ee;
+      color: #020617;
+    }
+
+    .speed {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,0.72);
+      font-size: 14px;
+    }
+
+    input[type="range"] {
+      accent-color: #22d3ee;
+    }
+
+    .phone-area {
+      position: relative;
+      min-height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 26px;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(0,0,0,0.95));
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .phone-meta {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: rgba(255,255,255,0.62);
+    }
+
+    .phone {
+      position: relative;
+      width: 180px;
+      height: 320px;
+      border: 7px solid #334155;
+      border-radius: 38px;
+      background: #020617;
+      box-shadow: 0 0 50px rgba(34,211,238,0.18);
+    }
+
+    .phone.processing {
+      animation: phoneMove 1.5s infinite ease-in-out;
+    }
+
+    @keyframes phoneMove {
+      0%, 100% { transform: rotate(-1deg); }
+      50% { transform: rotate(1deg); }
+    }
+
+    .notch {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 78px;
+      height: 18px;
+      background: black;
+      border-radius: 999px;
+      z-index: 10;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 8px;
+      border-radius: 28px;
+      overflow: hidden;
+      background: linear-gradient(to bottom, #38bdf8, #bae6fd 38%, #047857);
+    }
+
+    .screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 30% 22%, rgba(255,255,255,0.9), transparent 18%),
+        linear-gradient(to top, rgba(2,6,23,0.8), transparent 45%);
+      z-index: 1;
+    }
+
+    .landscape {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 38px;
+      height: 100px;
+      background: linear-gradient(to top, rgba(15,23,42,0.95), rgba(6,78,59,0.5), transparent);
+      z-index: 2;
+    }
+
+    .screen.enhanced .landscape {
+      animation: saturate 1.4s infinite ease-in-out;
+    }
+
+    @keyframes saturate {
+      0%, 100% { filter: saturate(1); }
+      50% { filter: saturate(1.8); }
+    }
+
+    .focus-ring {
+      position: absolute;
+      top: 100px;
+      left: 40px;
+      width: 80px;
+      height: 80px;
+      border: 2px solid rgba(255,255,255,0.7);
+      border-radius: 50%;
+      z-index: 4;
+      display: none;
+      animation: pulse 1.2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.25); opacity: 1; }
+    }
+
+    .pixel-grid {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(12, 1fr);
+      opacity: 0;
+      z-index: 3;
+    }
+
+    .pixel-grid div {
+      border: 1px solid rgba(15,23,42,0.35);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .adjustments,
+    .saved,
+    .cloud {
+      display: none;
+    }
+
+    .adjustments {
+      position: absolute;
+      bottom: 18px;
+      left: 14px;
+      right: 14px;
+      z-index: 6;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.2);
+      font-size: 12px;
+    }
+
+    .adjustments div {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+    }
+
+    .saved {
+      position: absolute;
+      bottom: 22px;
+      left: 14px;
+      right: 14px;
+      z-index: 7;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(251,191,36,0.5);
+      color: #fde68a;
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .cloud {
+      position: absolute;
+      inset: 0;
+      z-index: 8;
+      background: rgba(2,6,23,0.65);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cloud-box {
+      border: 1px solid rgba(103,232,249,0.45);
+      border-radius: 24px;
+      background: rgba(0,0,0,0.65);
+      padding: 20px;
+      text-align: center;
+      color: #cffafe;
+      box-shadow: 0 0 30px rgba(34,211,238,0.3);
+    }
+
+    .cloud-box .big {
+      font-size: 44px;
+    }
+
+    .active-step {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      z-index: 9;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+    }
+
+    .active-step small {
+      color: #67e8f9;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 10px;
+    }
+
+    .active-step strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 17px;
+    }
+
+    .side h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .icon-title {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .icon-box {
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #22d3ee, #a78bfa);
+      color: #020617;
+      font-size: 30px;
+    }
+
+    .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.48);
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+
+    .info-box {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .info-box p {
+      margin: 8px 0 0;
+      color: rgba(255,255,255,0.74);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .warning {
+      border-color: rgba(251,191,36,0.25);
+      background: rgba(251,191,36,0.08);
+    }
+
+    .teacher,
+    .bits {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .teacher p,
+    .bits p {
+      color: rgba(255,255,255,0.72);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .bits-stream {
+      font-family: monospace;
+      font-size: 12px;
+      color: #a5f3fc;
+      line-height: 1.8;
+      overflow: hidden;
+    }
+
+    .bits-stream.running div {
+      animation: bitsMove 1.2s infinite ease-in-out;
+    }
+
+    @keyframes bitsMove {
+      0%, 100% { transform: translateX(0); opacity: 0.45; }
+      50% { transform: translateX(8px); opacity: 1; }
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      position: relative;
+      min-height: 220px;
+      border-radius: 22px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: white;
+      text-align: left;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.28);
+    }
+
+    .card.active {
+      outline: 2px solid rgba(255,255,255,0.5);
+      transform: scale(1.02);
+    }
+
+    .card h3 {
+      margin: 10px 0 8px;
+      font-size: 17px;
+    }
+
+    .card p {
+      color: rgba(255,255,255,0.72);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #22d3ee;
+      color: #020617;
+      font-size: 26px;
+    }
+
+    .card-number {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .data {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.1);
+      font-size: 13px;
+    }
+
+    .quiz {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .quiz-card {
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      background: rgba(255,255,255,0.06);
+      padding: 22px;
+    }
+
+    .quiz-option {
+      width: 100%;
+      margin-top: 8px;
+      text-align: left;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .correct {
+      background: rgba(34,197,94,0.22);
+      border-color: #86efac;
+    }
+
+    .wrong {
+      background: rgba(239,68,68,0.18);
+      border-color: #fca5a5;
+    }
+
+    .feedback {
+      display: none;
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.75);
+      line-height: 1.5;
+    }
+
+    footer {
+      margin-top: 24px;
+      padding: 24px;
+      text-align: center;
+      border-radius: 28px;
+      background: linear-gradient(90deg, rgba(34,211,238,0.12), rgba(217,70,239,0.12), rgba(251,191,36,0.12));
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: clamp(20px, 2.5vw, 28px);
+      font-weight: bold;
+      font-style: italic;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 1050px) {
+      .simulator,
+      .quiz {
+        grid-template-columns: 1fr;
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .controls,
+      .buttons,
+      button,
+      .speed {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>O caminho dos dados ao <span>tirar uma foto</span></h1>
+      <p>
+        Uma foto no celular parece instantânea, mas envolve entrada,
+        digitalização, memória, processamento, saída, armazenamento e sincronização.
+      </p>
+    </header>
+
+    <section class="simulator">
+      <div class="panel">
+        <div class="controls">
+          <div class="buttons">
+            <button class="primary" id="playBtn">▶ Iniciar</button>
+            <button id="nextBtn">⏭ Avançar</button>
+            <button id="resetBtn">↺ Reiniciar</button>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/30 text-xl font-black text-white">
-            {concluido ? <Icon name="check" size={22} className="text-emerald-300" /> : etapa.id}
+
+          <label class="speed">
+            Velocidade
+            <input id="speedRange" type="range" min="700" max="2600" step="100" value="1400" />
+          </label>
+        </div>
+
+        <div class="phone-area">
+          <div class="phone-meta">
+            <span>◉ fluxo de dados <span id="progressText">14%</span></span>
+            <span id="componentBadge">Câmera</span>
           </div>
-        </div>
-        <p className="text-xs uppercase tracking-[0.22em] text-white/50">{etapa.subtitulo}</p>
-        <h3 className="mt-1 text-lg font-black leading-tight text-white">{etapa.titulo}</h3>
-        <p className="mt-3 text-sm leading-relaxed text-white/72">{etapa.descricao}</p>
-        <div className="mt-4 rounded-xl border border-white/10 bg-black/25 p-3">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">Dado neste momento</p>
-          <p className="mt-1 text-sm font-semibold text-white">{etapa.dado}</p>
-        </div>
-        {ativo && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pointer-events-none absolute inset-0 rounded-2xl border border-white/40 shadow-[0_0_35px_rgba(255,255,255,.18)]" />
-        )}
-      </motion.div>
-    </button>
-  );
-}
 
-function PhonePreview({ etapaAtual }) {
-  const progresso = Math.round((etapaAtual / etapas.length) * 100);
-  const isCloud = etapaAtual === 7;
-  const isProcessing = etapaAtual >= 2 && etapaAtual <= 4;
+          <div class="phone" id="phone">
+            <div class="notch"></div>
+            <div class="screen" id="screen">
+              <div class="landscape"></div>
+              <div class="focus-ring" id="focusRing"></div>
+              <div class="pixel-grid" id="pixelGrid"></div>
 
-  return (
-    <div className="relative mx-auto flex min-h-[420px] w-full max-w-md items-center justify-center rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900/90 to-black/90 p-6 shadow-2xl">
-      <div className="absolute left-6 top-6 flex items-center gap-2 text-xs text-white/50"><Icon name="gauge" size={16} /> fluxo de dados {progresso}%</div>
-      <div className="absolute right-6 top-6"><Badge>{etapas[etapaAtual - 1].componente}</Badge></div>
-
-      <motion.div
-        className="relative h-[310px] w-[170px] rounded-[2.2rem] border-[7px] border-slate-700 bg-slate-950 shadow-[0_0_50px_rgba(34,211,238,.15)]"
-        animate={isProcessing ? { rotate: [-1, 1, -1] } : { rotate: 0 }}
-        transition={{ repeat: isProcessing ? Infinity : 0, duration: 1.5 }}
-      >
-        <div className="absolute left-1/2 top-2 h-5 w-20 -translate-x-1/2 rounded-full bg-black" />
-        <div className="absolute inset-2 overflow-hidden rounded-[1.6rem] bg-gradient-to-b from-sky-400 via-cyan-200 to-emerald-800">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,.9),transparent_18%),radial-gradient(circle_at_70%_35%,rgba(255,255,255,.6),transparent_12%),linear-gradient(to_top,rgba(2,6,23,.75),transparent_45%)]" />
-          <motion.div
-            className="absolute bottom-10 left-0 right-0 h-24 bg-gradient-to-t from-slate-900/90 via-emerald-900/50 to-transparent"
-            animate={etapaAtual >= 4 ? { filter: ["saturate(1)", "saturate(1.7)", "saturate(1.2)"] } : {}}
-            transition={{ duration: 1.4, repeat: etapaAtual >= 4 ? Infinity : 0 }}
-          />
-          <motion.div
-            className="absolute left-6 top-24 h-20 w-20 rounded-full border border-white/50"
-            animate={etapaAtual === 1 ? { scale: [1, 1.2, 1], opacity: [0.2, 0.9, 0.2] } : { opacity: 0 }}
-            transition={{ repeat: Infinity, duration: 1.2 }}
-          />
-          {etapaAtual >= 2 && (
-            <div className="absolute inset-0 grid grid-cols-8 grid-rows-12 opacity-25">
-              {Array.from({ length: 96 }).map((_, i) => <div key={i} className="border border-slate-900/30 bg-white/5" />)}
-            </div>
-          )}
-          {etapaAtual === 4 && (
-            <div className="absolute bottom-4 left-4 right-4 space-y-2 rounded-2xl border border-white/20 bg-black/45 p-3 text-xs text-white">
-              <div className="flex items-center justify-between"><span>foco</span><span>+18%</span></div>
-              <div className="flex items-center justify-between"><span>cor</span><span>+24%</span></div>
-              <div className="flex items-center justify-between"><span>nitidez</span><span>+31%</span></div>
-            </div>
-          )}
-          {etapaAtual === 6 && (
-            <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="absolute bottom-5 left-4 right-4 rounded-2xl border border-amber-300/30 bg-black/60 p-3 text-center text-xs font-bold text-amber-100">
-              IMG_2026.HEIC salvo
-            </motion.div>
-          )}
-          {isCloud && (
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="absolute inset-0 flex items-center justify-center bg-slate-950/55 backdrop-blur-sm">
-              <div className="rounded-3xl border border-cyan-300/40 bg-black/60 p-5 text-center text-cyan-100 shadow-[0_0_30px_rgba(34,211,238,.28)]">
-                <Icon name="cloud" className="mx-auto mb-2" size={46} />
-                <p className="text-sm font-black">Sincronizado</p>
-                <p className="mt-1 text-xs text-white/60">cópia remota criada</p>
+              <div class="adjustments" id="adjustments">
+                <div><span>foco</span><strong>+18%</strong></div>
+                <div><span>cor</span><strong>+24%</strong></div>
+                <div><span>nitidez</span><strong>+31%</strong></div>
               </div>
-            </motion.div>
-          )}
-        </div>
-      </motion.div>
 
-      <AnimatePresence mode="wait">
-        <motion.div key={etapaAtual} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/10 bg-white/8 p-4 backdrop-blur">
-          <p className="text-xs uppercase tracking-[0.22em] text-cyan-200/70">etapa ativa</p>
-          <p className="mt-1 text-lg font-black text-white">{etapas[etapaAtual - 1].titulo}</p>
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  );
-}
+              <div class="saved" id="saved">IMG_2026.HEIC salvo</div>
 
-function QuizBox() {
-  const [indice, setIndice] = useState(0);
-  const [selecionada, setSelecionada] = useState(null);
-  const atual = miniQuiz[indice];
-  const acertou = selecionada === atual.correta;
+              <div class="cloud" id="cloud">
+                <div class="cloud-box">
+                  <div class="big">☁️</div>
+                  <strong>Sincronizado</strong><br />
+                  <small>cópia remota criada</small>
+                </div>
+              </div>
+            </div>
+          </div>
 
-  function responder(i) {
-    setSelecionada(i);
-  }
-
-  function proxima() {
-    setSelecionada(null);
-    setIndice((indice + 1) % miniQuiz.length);
-  }
-
-  return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl backdrop-blur">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="rounded-2xl bg-gradient-to-br from-fuchsia-400 to-cyan-400 p-3 text-slate-950"><Icon name="question" size={24} /></div>
-        <div>
-          <h3 className="text-lg font-black text-white">Checagem formativa</h3>
-          <p className="text-sm text-white/55">Questão {indice + 1} de {miniQuiz.length}</p>
+          <div class="active-step">
+            <small>Etapa ativa</small>
+            <strong id="activeTitle">Câmera captura luz</strong>
+          </div>
         </div>
       </div>
-      <p className="text-base font-semibold leading-relaxed text-white">{atual.pergunta}</p>
-      <div className="mt-4 grid gap-2">
-        {atual.opcoes.map((opcao, i) => {
-          const selected = selecionada === i;
-          const correct = selecionada !== null && i === atual.correta;
-          return (
-            <button
-              key={opcao}
-              onClick={() => responder(i)}
-              className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${correct ? "border-emerald-300/70 bg-emerald-400/15 text-emerald-100" : selected ? "border-red-300/70 bg-red-400/10 text-red-100" : "border-white/10 bg-black/20 text-white/75 hover:bg-white/10"}`}
-            >
-              {opcao}
-            </button>
-          );
-        })}
+
+      <aside class="panel side">
+        <div class="icon-title">
+          <div class="icon-box" id="sideIcon">📷</div>
+          <div>
+            <div class="label" id="sideStep">Etapa 1</div>
+            <h2 id="componentTitle">Câmera</h2>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <div class="label">Pergunta provocativa</div>
+          <p id="questionText"></p>
+        </div>
+
+        <div class="info-box warning">
+          <div class="label">⚠ erro comum</div>
+          <p id="errorText"></p>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <button id="teacherToggle">🎓 Modo professor</button>
+          <button id="bitsToggle">✦ Bits visíveis</button>
+        </div>
+
+        <div class="teacher" id="teacherBox">
+          <strong>🎓 Fala estratégica do professor</strong>
+          <p id="teacherText"></p>
+        </div>
+
+        <div class="bits" id="bitsBox">
+          <strong>Fluxo simbólico dos bits</strong>
+          <div class="bits-stream" id="bitsStream"></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="cards" id="cards"></section>
+
+    <section class="quiz">
+      <div class="quiz-card">
+        <h2>Leitura didática do fluxo</h2>
+        <p><strong style="color:#67e8f9">Entrada:</strong> câmera e sensor capturam sinais do mundo físico.</p>
+        <p><strong style="color:#86efac">Memória:</strong> a RAM mantém temporariamente os dados em uso.</p>
+        <p><strong style="color:#fde68a">Processamento:</strong> CPU/ISP transformam dados conforme instruções.</p>
+        <p><strong style="color:#ddd6fe">Saída e permanência:</strong> tela exibe; armazenamento salva; nuvem sincroniza.</p>
       </div>
-      {selecionada !== null && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-2xl border border-white/10 bg-black/25 p-4">
-          <p className={`font-bold ${acertou ? "text-emerald-200" : "text-amber-200"}`}>{acertou ? "Boa análise." : "Quase. Repare no papel de cada componente."}</p>
-          <p className="mt-1 text-sm leading-relaxed text-white/65">{atual.feedback}</p>
-          <button onClick={proxima} className="mt-3 rounded-xl bg-white px-4 py-2 text-sm font-black text-slate-950 hover:bg-cyan-100">Próxima questão</button>
-        </motion.div>
-      )}
-    </div>
-  );
-}
 
-export default function SimuladorCaminhoDosDados() {
-  const [etapaAtual, setEtapaAtual] = useState(1);
-  const [rodando, setRodando] = useState(false);
-  const [velocidade, setVelocidade] = useState(1400);
-  const [modoProfessor, setModoProfessor] = useState(true);
-  const [mostrarBits, setMostrarBits] = useState(true);
-  const timer = useRef(null);
+      <div class="quiz-card">
+        <h2>Checagem formativa</h2>
+        <p class="label" id="quizCounter">Questão 1 de 4</p>
+        <p id="quizQuestion"></p>
+        <div id="quizOptions"></div>
+        <div class="feedback" id="feedback"></div>
+        <button id="nextQuizBtn" style="margin-top: 12px;">Próxima questão</button>
+      </div>
+    </section>
 
-  useEffect(() => {
-    runSelfTests();
-  }, []);
+    <footer>
+      Tirar uma foto parece simples. Por trás do toque na tela, há um fluxo completo de dados.
+    </footer>
+  </div>
 
-  useEffect(() => {
-    if (!rodando) return undefined;
-    timer.current = window.setInterval(() => {
-      setEtapaAtual((prev) => {
-        if (prev >= etapas.length) {
-          setRodando(false);
-          return prev;
-        }
-        return prev + 1;
+  <script>
+    const etapas = [
+      {
+        titulo: "Câmera captura luz",
+        subtitulo: "Entrada",
+        componente: "Câmera",
+        icon: "📷",
+        descricao: "A câmera recebe luz do ambiente. Para o computador, ainda não existe foto: existe um sinal físico que precisa ser convertido.",
+        dado: "Luz do ambiente",
+        pergunta: "O que entra primeiro no sistema: a imagem pronta ou a luz refletida pelos objetos?",
+        erro: "Pensar que a câmera já produz imediatamente um arquivo final.",
+        professor: "Comece perguntando: a foto já nasce como arquivo? A resposta abre espaço para discutir entrada, sinal físico e representação digital."
+      },
+      {
+        titulo: "Sensor converte sinais em dados",
+        subtitulo: "Digitalização",
+        componente: "Sensor de imagem",
+        icon: "🌈",
+        descricao: "O sensor transforma intensidades de luz em valores numéricos. A realidade contínua é amostrada em pixels e codificada em bits.",
+        dado: "Pixels + valores RGB",
+        pergunta: "Quando a realidade vira números, o que se ganha e o que se perde?",
+        erro: "Confundir imagem digital com cópia perfeita da realidade.",
+        professor: "Use a metáfora do mosaico: a foto digital é uma grade de pequenos quadrados, cada um com números que representam cor e brilho."
+      },
+      {
+        titulo: "Dados passam pela memória principal",
+        subtitulo: "Memória temporária",
+        componente: "RAM",
+        icon: "🧠",
+        descricao: "Os dados temporários da foto ficam na RAM para serem rapidamente acessados durante o processamento.",
+        dado: "Imagem temporária em processamento",
+        pergunta: "Por que a foto precisa passar pela memória antes de ser salva?",
+        erro: "Achar que toda memória é permanente.",
+        professor: "Diferencie guardar para usar agora e guardar para manter depois. RAM é mesa de trabalho, armazenamento interno é arquivo permanente."
+      },
+      {
+        titulo: "Processador aplica ajustes",
+        subtitulo: "Processamento",
+        componente: "CPU/ISP",
+        icon: "⚙️",
+        descricao: "O processador e o ISP ajustam foco, cor, brilho, nitidez e compressão. O dado é transformado por instruções.",
+        dado: "Imagem melhorada e comprimida",
+        pergunta: "O celular entende a imagem ou apenas transforma números segundo regras?",
+        erro: "Atribuir compreensão humana ao processador.",
+        professor: "Mostre que processamento não é magia: é uma sequência de operações sobre dados representados em bits."
+      },
+      {
+        titulo: "Tela exibe a imagem",
+        subtitulo: "Saída",
+        componente: "Display",
+        icon: "📱",
+        descricao: "A tela reconstrói visualmente os dados processados, emitindo luz organizada em pixels para que humanos interpretem a foto.",
+        dado: "Imagem visível ao usuário",
+        pergunta: "A tela mostra dados ou informação? Depende de quem observa?",
+        erro: "Confundir saída visual com compreensão computacional.",
+        professor: "A tela não mostra significado; ela mostra sinais visuais. Quem interpreta a foto é a pessoa."
+      },
+      {
+        titulo: "Arquivo salvo no armazenamento interno",
+        subtitulo: "Persistência",
+        componente: "SSD/Flash",
+        icon: "💾",
+        descricao: "O arquivo é gravado em memória não volátil. Agora a foto permanece mesmo depois que o celular é desligado.",
+        dado: "Arquivo .jpg/.heic salvo",
+        pergunta: "O que torna um dado temporário diferente de um arquivo salvo?",
+        erro: "Achar que salvar e processar são a mesma operação.",
+        professor: "Contraste RAM e armazenamento interno: uma serve ao trabalho imediato; o outro preserva o resultado."
+      },
+      {
+        titulo: "Foto pode ser sincronizada com a nuvem",
+        subtitulo: "Transmissão",
+        componente: "Rede/Nuvem",
+        icon: "☁️",
+        descricao: "Uma cópia pode ser enviada pela rede para servidores remotos. O dado sai do dispositivo e passa a depender de comunicação, autenticação e políticas de privacidade.",
+        dado: "Cópia remota sincronizada",
+        pergunta: "Quando a foto vai para a nuvem, ela ainda está apenas no meu celular?",
+        erro: "Ignorar que sincronização amplia circulação e riscos dos dados.",
+        professor: "Finalize com cultura digital: o caminho dos dados também envolve privacidade, consentimento e segurança."
+      }
+    ];
+
+    const quiz = [
+      {
+        pergunta: "Qual etapa transforma luz em valores digitais?",
+        opcoes: ["Tela", "Sensor", "Nuvem", "Armazenamento interno"],
+        correta: 1,
+        feedback: "O sensor converte sinais físicos de luz em dados digitais."
+      },
+      {
+        pergunta: "Por que a RAM aparece antes do armazenamento interno?",
+        opcoes: ["Porque guarda dados temporários durante o processamento", "Porque é permanente", "Porque substitui a CPU", "Porque envia dados para a nuvem"],
+        correta: 0,
+        feedback: "A RAM funciona como memória de trabalho: rápida, temporária e usada durante a execução."
+      },
+      {
+        pergunta: "O que a CPU/ISP faz com os dados da imagem?",
+        opcoes: ["Apaga pixels", "Transforma os dados aplicando ajustes e instruções", "Guarda a foto para sempre", "É a tela"],
+        correta: 1,
+        feedback: "Processamento é transformação de dados: foco, cor, brilho, nitidez e compressão."
+      },
+      {
+        pergunta: "Qual etapa preserva a foto mesmo quando o celular é desligado?",
+        opcoes: ["RAM", "Tela", "Armazenamento interno", "Sensor"],
+        correta: 2,
+        feedback: "O armazenamento interno é memória não volátil."
+      }
+    ];
+
+    let etapaAtual = 0;
+    let rodando = false;
+    let timer = null;
+    let velocidade = 1400;
+    let professorVisivel = true;
+    let bitsVisiveis = true;
+    let quizAtual = 0;
+    let respostaSelecionada = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function criarPixels() {
+      const grid = $("pixelGrid");
+      for (let i = 0; i < 96; i++) {
+        grid.appendChild(document.createElement("div"));
+      }
+    }
+
+    function criarCards() {
+      const cards = $("cards");
+      cards.innerHTML = "";
+
+      etapas.forEach((etapa, index) => {
+        const card = document.createElement("button");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-icon">${etapa.icon}</div>
+            <div class="card-number">${index + 1}</div>
+          </div>
+          <div class="label" style="margin-top: 12px;">${etapa.subtitulo}</div>
+          <h3>${etapa.titulo}</h3>
+          <p>${etapa.descricao}</p>
+          <div class="data"><strong>Dado:</strong><br>${etapa.dado}</div>
+        `;
+
+        card.addEventListener("click", () => {
+          parar();
+          etapaAtual = index;
+          render();
+        });
+
+        cards.appendChild(card);
       });
-    }, velocidade);
+    }
 
-    return () => {
-      if (timer.current) window.clearInterval(timer.current);
-    };
-  }, [rodando, velocidade]);
+    function gerarBits() {
+      const stream = $("bitsStream");
+      stream.innerHTML = "";
 
-  const etapa = etapas[etapaAtual - 1];
+      for (let linha = 0; linha < 6; linha++) {
+        const div = document.createElement("div");
+        let bits = [];
 
-  function resetar() {
-    setRodando(false);
-    setEtapaAtual(1);
-  }
+        for (let i = 0; i < 36; i++) {
+          bits.push((i + linha + etapaAtual) % 3 === 0 ? "1" : "0");
+        }
 
-  function proxima() {
-    setRodando(false);
-    setEtapaAtual((prev) => Math.min(prev + 1, etapas.length));
-  }
+        div.textContent = bits.join(" ");
+        stream.appendChild(div);
+      }
 
-  return (
-    <div className="min-h-screen overflow-hidden bg-slate-950 text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,.16),transparent_30%),radial-gradient(circle_at_85%_25%,rgba(168,85,247,.18),transparent_25%),radial-gradient(circle_at_50%_90%,rgba(245,158,11,.12),transparent_25%)]" />
-      <div className="pointer-events-none fixed inset-0 opacity-[0.06]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.8) 1px, transparent 1px)", backgroundSize: "38px 38px" }} />
+      stream.classList.toggle("running", rodando);
+    }
 
-      <main className="relative mx-auto max-w-7xl px-5 py-8 lg:px-8">
-        <section className="mb-8 rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-2xl backdrop-blur md:p-8">
-          <div className="grid gap-6 lg:grid-cols-[1.2fr_.8fr] lg:items-center">
-            <div>
-              <div className="mb-4 flex flex-wrap gap-2">
-                <Badge><Icon name="sparkle" size={14} className="mr-2" /> Simulador didático interativo</Badge>
-                <Badge><Icon name="layers" size={14} className="mr-2" /> Entrada • processamento • memória • armazenamento • saída</Badge>
-              </div>
-              <h1 className="text-4xl font-black leading-tight tracking-tight md:text-6xl">
-                O caminho dos dados ao <span className="bg-gradient-to-r from-cyan-300 via-fuchsia-300 to-amber-200 bg-clip-text text-transparent">tirar uma foto</span>
-              </h1>
-              <p className="mt-4 max-w-3xl text-lg leading-relaxed text-white/68">
-                Uma foto no celular parece instantânea, mas percorre um fluxo completo: sinais físicos entram, viram dados, passam por memória, são processados, exibidos, salvos e podem ser enviados para a nuvem.
-              </p>
-            </div>
-            <div className="rounded-3xl border border-cyan-300/20 bg-slate-950/70 p-5 shadow-[0_0_40px_rgba(34,211,238,.12)]">
-              <div className="flex items-center gap-3">
-                <div className={`rounded-2xl bg-gradient-to-br ${etapa.acento} p-3 text-slate-950`}><Icon name={etapa.icon} size={28} /></div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.22em] text-white/45">Agora no fluxo</p>
-                  <h2 className="text-xl font-black text-white">{etapa.titulo}</h2>
-                </div>
-              </div>
-              <p className="mt-4 text-sm leading-relaxed text-white/65">{etapa.descricao}</p>
-              <DataParticle active etapaAtual={etapaAtual} paused={!rodando} />
-            </div>
-          </div>
-        </section>
+    function renderPhone() {
+      const etapa = etapas[etapaAtual];
 
-        <section className="mb-8 grid gap-5 lg:grid-cols-[1fr_420px]">
-          <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-2xl backdrop-blur">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap gap-2">
-                <button onClick={() => setRodando(!rodando)} className="inline-flex items-center rounded-2xl bg-cyan-300 px-5 py-3 font-black text-slate-950 shadow-lg shadow-cyan-500/20 hover:bg-cyan-200">
-                  <Icon name={rodando ? "pause" : "play"} size={18} className="mr-2" />{rodando ? "Pausar" : "Iniciar"}
-                </button>
-                <button onClick={proxima} className="inline-flex items-center rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-bold text-white hover:bg-white/15"><Icon name="next" size={18} className="mr-2" />Avançar</button>
-                <button onClick={resetar} className="inline-flex items-center rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-bold text-white hover:bg-white/15"><Icon name="reset" size={18} className="mr-2" />Reiniciar</button>
-              </div>
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                <span className="text-sm text-white/55">Velocidade</span>
-                <input type="range" min="700" max="2600" step="100" value={velocidade} onChange={(e) => setVelocidade(Number(e.target.value))} className="accent-cyan-300" />
-              </div>
-            </div>
+      $("phone").classList.toggle("processing", etapaAtual >= 1 && etapaAtual <= 3);
+      $("screen").classList.toggle("enhanced", etapaAtual >= 3);
 
-            <PhonePreview etapaAtual={etapaAtual} />
-          </div>
+      $("focusRing").style.display = etapaAtual === 0 ? "block" : "none";
+      $("pixelGrid").style.opacity = etapaAtual >= 1 ? "0.25" : "0";
 
-          <div className="space-y-5">
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 shadow-2xl backdrop-blur">
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className={`rounded-2xl bg-gradient-to-br ${etapa.acento} p-3 text-slate-950`}><Icon name={etapa.icon} size={26} /></div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.22em] text-white/45">Etapa {etapa.id}</p>
-                    <h3 className="text-xl font-black text-white">{etapa.componente}</h3>
-                  </div>
-                </div>
-              </div>
+      $("adjustments").style.display = etapaAtual === 3 ? "block" : "none";
+      $("saved").style.display = etapaAtual === 5 ? "block" : "none";
+      $("cloud").style.display = etapaAtual === 6 ? "flex" : "none";
+    }
 
-              <div className="grid gap-3">
-                <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-cyan-200/60">Pergunta provocativa</p>
-                  <p className="mt-2 text-sm font-semibold leading-relaxed text-white/80">{etapa.pergunta}</p>
-                </div>
-                <div className="rounded-2xl border border-amber-300/20 bg-amber-300/8 p-4">
-                  <p className="flex items-center text-xs uppercase tracking-[0.2em] text-amber-200/70"><Icon name="warning" size={14} className="mr-2" /> erro comum</p>
-                  <p className="mt-2 text-sm leading-relaxed text-white/72">{etapa.erro}</p>
-                </div>
-              </div>
+    function render() {
+      const etapa = etapas[etapaAtual];
+      const progresso = Math.round(((etapaAtual + 1) / etapas.length) * 100);
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button onClick={() => setModoProfessor(!modoProfessor)} className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/15"><Icon name="teacher" size={16} className="mr-2 inline-flex" />Modo professor</button>
-                <button onClick={() => setMostrarBits(!mostrarBits)} className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/15"><Icon name="brain" size={16} className="mr-2 inline-flex" />Bits visíveis</button>
-              </div>
-            </div>
+      $("activeTitle").textContent = etapa.titulo;
+      $("progressText").textContent = progresso + "%";
+      $("componentBadge").textContent = etapa.componente;
+      $("sideIcon").textContent = etapa.icon;
+      $("sideStep").textContent = "Etapa " + (etapaAtual + 1);
+      $("componentTitle").textContent = etapa.componente;
+      $("questionText").textContent = etapa.pergunta;
+      $("errorText").textContent = etapa.erro;
+      $("teacherText").textContent = etapa.professor;
 
-            {modoProfessor && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-[2rem] border border-fuchsia-300/20 bg-fuchsia-300/[0.07] p-5 shadow-2xl backdrop-blur">
-                <h3 className="mb-2 flex items-center gap-2 text-lg font-black text-white"><Icon name="teacher" className="text-fuchsia-200" /> Fala estratégica do professor</h3>
-                <p className="text-sm leading-relaxed text-white/70">{etapa.professor}</p>
-              </motion.div>
-            )}
+      $("playBtn").textContent = rodando ? "⏸ Pausar" : "▶ Iniciar";
 
-            {mostrarBits && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/[0.06] p-5 shadow-2xl backdrop-blur">
-                <h3 className="mb-3 text-lg font-black text-white">Fluxo simbólico dos bits</h3>
-                <div className="font-mono text-xs leading-6 text-cyan-100/80">
-                  {Array.from({ length: 6 }).map((_, linha) => (
-                    <motion.div key={linha} animate={rodando ? { x: [0, 8, 0], opacity: [0.45, 1, 0.45] } : {}} transition={{ repeat: rodando ? Infinity : 0, delay: linha * 0.12, duration: 1.2 }}>
-                      {Array.from({ length: 36 }).map((_, i) => ((i + linha + etapaAtual) % 3 === 0 ? "1" : "0")).join(" ")}
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </div>
-        </section>
+      $("teacherBox").classList.toggle("hidden", !professorVisivel);
+      $("bitsBox").classList.toggle("hidden", !bitsVisiveis);
 
-        <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-7">
-          {etapas.map((item) => (
-            <EtapaCard key={item.id} etapa={item} ativo={item.id === etapaAtual} concluido={item.id < etapaAtual} onClick={(id) => { setRodando(false); setEtapaAtual(id); }} />
-          ))}
-        </section>
+      document.querySelectorAll(".card").forEach((card, index) => {
+        card.classList.toggle("active", index === etapaAtual);
+        const number = card.querySelector(".card-number");
+        number.textContent = index < etapaAtual ? "✓" : index + 1;
+        number.style.color = index < etapaAtual ? "#86efac" : "white";
+      });
 
-        <section className="mb-10 grid gap-5 lg:grid-cols-[1fr_1fr]">
-          <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-6 shadow-2xl backdrop-blur">
-            <h2 className="mb-4 text-2xl font-black text-white">Leitura didática do fluxo</h2>
-            <div className="grid gap-3">
-              <div className="rounded-2xl border border-white/10 bg-black/25 p-4"><b className="text-cyan-200">Entrada:</b> câmera e sensor capturam sinais do mundo físico.</div>
-              <div className="rounded-2xl border border-white/10 bg-black/25 p-4"><b className="text-emerald-200">Memória:</b> a RAM mantém temporariamente os dados em uso.</div>
-              <div className="rounded-2xl border border-white/10 bg-black/25 p-4"><b className="text-amber-200">Processamento:</b> CPU/ISP transformam dados conforme instruções.</div>
-              <div className="rounded-2xl border border-white/10 bg-black/25 p-4"><b className="text-violet-200">Saída e permanência:</b> tela exibe; armazenamento salva; nuvem sincroniza.</div>
-            </div>
-          </div>
-          <QuizBox />
-        </section>
+      renderPhone();
+      gerarBits();
+    }
 
-        <footer className="rounded-[2rem] border border-white/10 bg-gradient-to-r from-cyan-400/10 via-fuchsia-400/10 to-amber-300/10 p-6 text-center shadow-2xl">
-          <p className="text-2xl font-black italic text-white">Tirar uma foto parece simples. Por trás do toque na tela, há entrada, representação, memória, processamento, armazenamento, saída e circulação de dados.</p>
-        </footer>
-      </main>
-    </div>
-  );
-}
+    function iniciar() {
+      if (rodando) {
+        parar();
+        render();
+        return;
+      }
+
+      if (etapaAtual >= etapas.length - 1) etapaAtual = 0;
+
+      rodando = true;
+      timer = setInterval(() => {
+        if (etapaAtual >= etapas.length - 1) {
+          parar();
+          render();
+          return;
+        }
+
+        etapaAtual++;
+        render();
+      }, velocidade);
+
+      render();
+    }
+
+    function parar() {
+      rodando = false;
+      clearInterval(timer);
+      timer = null;
+    }
+
+    function proximaEtapa() {
+      parar();
+      etapaAtual = Math.min(etapaAtual + 1, etapas.length - 1);
+      render();
+    }
+
+    function reiniciar() {
+      parar();
+      etapaAtual = 0;
+      render();
+    }
+
+    function renderQuiz() {
+      const q = quiz[quizAtual];
+      $("quizCounter").textContent = `Questão ${quizAtual + 1} de ${quiz.length}`;
+      $("quizQuestion").textContent = q.pergunta;
+      $("quizOptions").innerHTML = "";
+      $("feedback").style.display = "none";
+
+      q.opcoes.forEach((opcao, index) => {
+        const btn = document.createElement("button");
+        btn.className = "quiz-option";
+        btn.textContent = opcao;
+
+        btn.addEventListener("click", () => {
+          respostaSelecionada = index;
+          document.querySelectorAll(".quiz-option").forEach((b, i) => {
+            b.classList.remove("correct", "wrong");
+            if (i === q.correta) b.classList.add("correct");
+            else if (i === index) b.classList.add("wrong");
+          });
+
+          $("feedback").style.display = "block";
+          $("feedback").textContent = q.feedback;
+        });
+
+        $("quizOptions").appendChild(btn);
+      });
+    }
+
+    $("playBtn").addEventListener("click", iniciar);
+    $("nextBtn").addEventListener("click", proximaEtapa);
+    $("resetBtn").addEventListener("click", reiniciar);
+
+    $("speedRange").addEventListener("input", (event) => {
+      velocidade = Number(event.target.value);
+      if (rodando) {
+        parar();
+        iniciar();
+      }
+    });
+
+    $("teacherToggle").addEventListener("click", () => {
+      professorVisivel = !professorVisivel;
+      render();
+    });
+
+    $("bitsToggle").addEventListener("click", () => {
+      bitsVisiveis = !bitsVisiveis;
+      render();
+    });
+
+    $("nextQuizBtn").addEventListener("click", () => {
+      quizAtual = (quizAtual + 1) % quiz.length;
+      respostaSelecionada = null;
+      renderQuiz();
+    });
+
+    function testes() {
+      console.assert(etapas.length === 7, "O simulador deve ter 7 etapas.");
+      console.assert(quiz.length >= 4, "O quiz deve ter pelo menos 4 questões.");
+      console.info("Testes internos executados.");
+    }
+
+    criarPixels();
+    criarCards();
+    renderQuiz();
+    render();
+    testes();
+  </script>
+</body>
+</html>
