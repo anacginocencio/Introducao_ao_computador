@@ -1,0 +1,546 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const ICONS = {
+  camera: "📷",
+  sensor: "🌈",
+  memory: "🧠",
+  cpu: "⚙️",
+  screen: "📱",
+  drive: "💾",
+  cloud: "☁️",
+  play: "▶",
+  pause: "⏸",
+  reset: "↺",
+  next: "⏭",
+  question: "?",
+  teacher: "🎓",
+  layers: "▦",
+  check: "✓",
+  warning: "⚠",
+  brain: "✦",
+  gauge: "◉",
+  sparkle: "✧",
+};
+
+const etapas = [
+  {
+    id: 1,
+    titulo: "Câmera captura luz",
+    subtitulo: "Entrada",
+    componente: "Câmera",
+    icon: "camera",
+    cor: "cyan",
+    acento: "from-cyan-400 to-blue-500",
+    descricao: "A câmera recebe luz do ambiente. Para o computador, ainda não existe foto: existe um sinal físico que precisa ser convertido.",
+    dado: "Luz do ambiente",
+    professor: "Comece perguntando: a foto já nasce como arquivo? A resposta abre espaço para discutir entrada, sinal físico e representação digital.",
+    pergunta: "O que entra primeiro no sistema: a imagem pronta ou a luz refletida pelos objetos?",
+    erro: "Pensar que a câmera já produz imediatamente um arquivo final.",
+  },
+  {
+    id: 2,
+    titulo: "Sensor converte sinais em dados",
+    subtitulo: "Digitalização",
+    componente: "Sensor de imagem",
+    icon: "sensor",
+    cor: "blue",
+    acento: "from-blue-400 to-indigo-500",
+    descricao: "O sensor transforma intensidades de luz em valores numéricos. A realidade contínua é amostrada em pixels e codificada em bits.",
+    dado: "Pixels + valores RGB",
+    professor: "Use a metáfora do mosaico: a foto digital é uma grade de pequenos quadrados, cada um com números que representam cor e brilho.",
+    pergunta: "Quando a realidade vira números, o que se ganha e o que se perde?",
+    erro: "Confundir imagem digital com cópia perfeita da realidade.",
+  },
+  {
+    id: 3,
+    titulo: "Dados passam pela memória principal",
+    subtitulo: "Memória temporária",
+    componente: "RAM",
+    icon: "memory",
+    cor: "emerald",
+    acento: "from-emerald-400 to-lime-500",
+    descricao: "Os dados temporários da foto ficam na RAM para serem rapidamente acessados durante o processamento.",
+    dado: "Imagem temporária em processamento",
+    professor: "Diferencie guardar para usar agora e guardar para manter depois. RAM é mesa de trabalho, armazenamento interno é arquivo permanente.",
+    pergunta: "Por que a foto precisa passar pela memória antes de ser salva?",
+    erro: "Achar que toda memória é permanente.",
+  },
+  {
+    id: 4,
+    titulo: "Processador aplica ajustes",
+    subtitulo: "Processamento",
+    componente: "CPU/ISP",
+    icon: "cpu",
+    cor: "amber",
+    acento: "from-amber-400 to-orange-600",
+    descricao: "O processador e o ISP ajustam foco, cor, brilho, nitidez e compressão. O dado é transformado por instruções.",
+    dado: "Imagem melhorada e comprimida",
+    professor: "Mostre que processamento não é magia: é uma sequência de operações sobre dados representados em bits.",
+    pergunta: "O celular entende a imagem ou apenas transforma números segundo regras?",
+    erro: "Atribuir compreensão humana ao processador.",
+  },
+  {
+    id: 5,
+    titulo: "Tela exibe a imagem",
+    subtitulo: "Saída",
+    componente: "Display",
+    icon: "screen",
+    cor: "violet",
+    acento: "from-violet-400 to-fuchsia-500",
+    descricao: "A tela reconstrói visualmente os dados processados, emitindo luz organizada em pixels para que humanos interpretem a foto.",
+    dado: "Imagem visível ao usuário",
+    professor: "A tela não mostra significado; ela mostra sinais visuais. Quem interpreta a foto é a pessoa.",
+    pergunta: "A tela mostra dados ou informação? Depende de quem observa?",
+    erro: "Confundir saída visual com compreensão computacional.",
+  },
+  {
+    id: 6,
+    titulo: "Arquivo salvo no armazenamento interno",
+    subtitulo: "Persistência",
+    componente: "SSD/Flash",
+    icon: "drive",
+    cor: "yellow",
+    acento: "from-yellow-300 to-amber-500",
+    descricao: "O arquivo é gravado em memória não volátil. Agora a foto permanece mesmo depois que o celular é desligado.",
+    dado: "Arquivo .jpg/.heic salvo",
+    professor: "Contraste RAM e armazenamento interno: uma serve ao trabalho imediato; o outro preserva o resultado.",
+    pergunta: "O que torna um dado temporário diferente de um arquivo salvo?",
+    erro: "Achar que salvar e processar são a mesma operação.",
+  },
+  {
+    id: 7,
+    titulo: "Foto pode ser sincronizada com a nuvem",
+    subtitulo: "Transmissão",
+    componente: "Rede/Nuvem",
+    icon: "cloud",
+    cor: "sky",
+    acento: "from-sky-300 to-cyan-500",
+    descricao: "Uma cópia pode ser enviada pela rede para servidores remotos. O dado sai do dispositivo e passa a depender de comunicação, autenticação e políticas de privacidade.",
+    dado: "Cópia remota sincronizada",
+    professor: "Finalize com cultura digital: o caminho dos dados também envolve privacidade, consentimento e segurança.",
+    pergunta: "Quando a foto vai para a nuvem, ela ainda está apenas 'no meu celular'?",
+    erro: "Ignorar que sincronização amplia circulação e riscos dos dados.",
+  },
+];
+
+const cores = {
+  cyan: "border-cyan-400/60 bg-cyan-950/30 shadow-cyan-500/20 text-cyan-100",
+  blue: "border-blue-400/60 bg-blue-950/30 shadow-blue-500/20 text-blue-100",
+  emerald: "border-emerald-400/60 bg-emerald-950/30 shadow-emerald-500/20 text-emerald-100",
+  amber: "border-amber-400/60 bg-amber-950/30 shadow-amber-500/20 text-amber-100",
+  violet: "border-violet-400/60 bg-violet-950/30 shadow-violet-500/20 text-violet-100",
+  yellow: "border-yellow-300/60 bg-yellow-950/30 shadow-yellow-500/20 text-yellow-100",
+  sky: "border-sky-300/60 bg-sky-950/30 shadow-sky-500/20 text-sky-100",
+};
+
+const miniQuiz = [
+  {
+    pergunta: "Qual etapa transforma luz em valores digitais?",
+    opcoes: ["Tela", "Sensor", "Nuvem", "Armazenamento interno"],
+    correta: 1,
+    feedback: "O sensor converte sinais físicos de luz em dados digitais, geralmente organizados em pixels.",
+  },
+  {
+    pergunta: "Por que a RAM aparece antes do armazenamento interno?",
+    opcoes: ["Porque guarda dados temporários durante o processamento", "Porque é mais permanente", "Porque substitui a CPU", "Porque envia dados para a nuvem"],
+    correta: 0,
+    feedback: "A RAM funciona como memória de trabalho: rápida, temporária e usada durante a execução.",
+  },
+  {
+    pergunta: "O que a CPU/ISP faz com os dados da imagem?",
+    opcoes: ["Apenas apaga pixels", "Transforma os dados aplicando ajustes e instruções", "Guarda a foto para sempre", "É a tela do celular"],
+    correta: 1,
+    feedback: "Processamento é transformação de dados: foco, cor, brilho, nitidez, compressão e outras operações.",
+  },
+  {
+    pergunta: "Qual etapa preserva a foto mesmo quando o celular é desligado?",
+    opcoes: ["RAM", "Tela", "Armazenamento interno", "Sensor"],
+    correta: 2,
+    feedback: "O armazenamento interno é memória não volátil; por isso preserva o arquivo depois do desligamento.",
+  },
+];
+
+function runSelfTests() {
+  const errors = [];
+  if (etapas.length !== 7) errors.push("O simulador deve ter 7 etapas.");
+  etapas.forEach((etapa, index) => {
+    if (etapa.id !== index + 1) errors.push(`Etapa fora de ordem: ${etapa.titulo}`);
+    if (!ICONS[etapa.icon]) errors.push(`Ícone inexistente na etapa ${etapa.id}.`);
+    if (!cores[etapa.cor]) errors.push(`Cor inexistente na etapa ${etapa.id}.`);
+  });
+  miniQuiz.forEach((q, index) => {
+    if (!Array.isArray(q.opcoes) || q.opcoes.length < 2) errors.push(`Quiz ${index + 1} precisa de pelo menos duas opções.`);
+    if (q.correta < 0 || q.correta >= q.opcoes.length) errors.push(`Quiz ${index + 1} tem resposta correta fora do intervalo.`);
+  });
+  if (errors.length) {
+    // Mantém o erro visível em desenvolvimento, sem quebrar a experiência do aluno em produção.
+    console.error("Falhas nos testes internos do simulador:", errors);
+  } else {
+    console.info("Testes internos do simulador: OK");
+  }
+  return errors;
+}
+
+function Icon({ name, className = "", size = 24 }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`inline-flex items-center justify-center leading-none ${className}`}
+      style={{ fontSize: size, width: size, height: size }}
+    >
+      {ICONS[name] || "•"}
+    </span>
+  );
+}
+
+function Badge({ children, className = "" }) {
+  return <span className={`inline-flex items-center rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-white/80 ${className}`}>{children}</span>;
+}
+
+function DataParticle({ active, etapaAtual, paused }) {
+  const positions = useMemo(() => etapas.map((_, i) => `${(i / (etapas.length - 1)) * 100}%`), []);
+
+  return (
+    <div className="relative h-10 w-full">
+      <div className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2 overflow-hidden rounded-full bg-white/10">
+        <motion.div
+          className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-amber-300"
+          animate={{ width: active ? positions[etapaAtual - 1] : "0%" }}
+          transition={{ duration: paused ? 0 : 0.7, ease: "easeInOut" }}
+        />
+      </div>
+      {etapas.map((etapa, index) => (
+        <div key={etapa.id} className="absolute top-1/2 -translate-y-1/2" style={{ left: positions[index] }}>
+          <motion.div
+            className={`-ml-2 h-4 w-4 rounded-full border ${etapa.id <= etapaAtual ? "border-white bg-cyan-300 shadow-[0_0_18px_rgba(34,211,238,.85)]" : "border-white/20 bg-slate-800"}`}
+            animate={etapa.id === etapaAtual && active && !paused ? { scale: [1, 1.35, 1], opacity: [0.8, 1, 0.8] } : { scale: 1 }}
+            transition={{ repeat: etapa.id === etapaAtual && active && !paused ? Infinity : 0, duration: 1.1 }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EtapaCard({ etapa, ativo, concluido, onClick }) {
+  return (
+    <button onClick={() => onClick(etapa.id)} className="group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 rounded-2xl">
+      <motion.div
+        layout
+        className={`relative h-full min-h-[220px] overflow-hidden rounded-2xl border p-4 shadow-2xl transition-all duration-300 ${cores[etapa.cor]} ${ativo ? "scale-[1.02] ring-2 ring-white/40" : "opacity-75 hover:opacity-100"}`}
+      >
+        <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${etapa.acento}`} />
+        <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
+        <div className="mb-4 flex items-center justify-between">
+          <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${etapa.acento} text-slate-950 shadow-lg`}>
+            <Icon name={etapa.icon} size={28} />
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/30 text-xl font-black text-white">
+            {concluido ? <Icon name="check" size={22} className="text-emerald-300" /> : etapa.id}
+          </div>
+        </div>
+        <p className="text-xs uppercase tracking-[0.22em] text-white/50">{etapa.subtitulo}</p>
+        <h3 className="mt-1 text-lg font-black leading-tight text-white">{etapa.titulo}</h3>
+        <p className="mt-3 text-sm leading-relaxed text-white/72">{etapa.descricao}</p>
+        <div className="mt-4 rounded-xl border border-white/10 bg-black/25 p-3">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">Dado neste momento</p>
+          <p className="mt-1 text-sm font-semibold text-white">{etapa.dado}</p>
+        </div>
+        {ativo && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pointer-events-none absolute inset-0 rounded-2xl border border-white/40 shadow-[0_0_35px_rgba(255,255,255,.18)]" />
+        )}
+      </motion.div>
+    </button>
+  );
+}
+
+function PhonePreview({ etapaAtual }) {
+  const progresso = Math.round((etapaAtual / etapas.length) * 100);
+  const isCloud = etapaAtual === 7;
+  const isProcessing = etapaAtual >= 2 && etapaAtual <= 4;
+
+  return (
+    <div className="relative mx-auto flex min-h-[420px] w-full max-w-md items-center justify-center rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900/90 to-black/90 p-6 shadow-2xl">
+      <div className="absolute left-6 top-6 flex items-center gap-2 text-xs text-white/50"><Icon name="gauge" size={16} /> fluxo de dados {progresso}%</div>
+      <div className="absolute right-6 top-6"><Badge>{etapas[etapaAtual - 1].componente}</Badge></div>
+
+      <motion.div
+        className="relative h-[310px] w-[170px] rounded-[2.2rem] border-[7px] border-slate-700 bg-slate-950 shadow-[0_0_50px_rgba(34,211,238,.15)]"
+        animate={isProcessing ? { rotate: [-1, 1, -1] } : { rotate: 0 }}
+        transition={{ repeat: isProcessing ? Infinity : 0, duration: 1.5 }}
+      >
+        <div className="absolute left-1/2 top-2 h-5 w-20 -translate-x-1/2 rounded-full bg-black" />
+        <div className="absolute inset-2 overflow-hidden rounded-[1.6rem] bg-gradient-to-b from-sky-400 via-cyan-200 to-emerald-800">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,.9),transparent_18%),radial-gradient(circle_at_70%_35%,rgba(255,255,255,.6),transparent_12%),linear-gradient(to_top,rgba(2,6,23,.75),transparent_45%)]" />
+          <motion.div
+            className="absolute bottom-10 left-0 right-0 h-24 bg-gradient-to-t from-slate-900/90 via-emerald-900/50 to-transparent"
+            animate={etapaAtual >= 4 ? { filter: ["saturate(1)", "saturate(1.7)", "saturate(1.2)"] } : {}}
+            transition={{ duration: 1.4, repeat: etapaAtual >= 4 ? Infinity : 0 }}
+          />
+          <motion.div
+            className="absolute left-6 top-24 h-20 w-20 rounded-full border border-white/50"
+            animate={etapaAtual === 1 ? { scale: [1, 1.2, 1], opacity: [0.2, 0.9, 0.2] } : { opacity: 0 }}
+            transition={{ repeat: Infinity, duration: 1.2 }}
+          />
+          {etapaAtual >= 2 && (
+            <div className="absolute inset-0 grid grid-cols-8 grid-rows-12 opacity-25">
+              {Array.from({ length: 96 }).map((_, i) => <div key={i} className="border border-slate-900/30 bg-white/5" />)}
+            </div>
+          )}
+          {etapaAtual === 4 && (
+            <div className="absolute bottom-4 left-4 right-4 space-y-2 rounded-2xl border border-white/20 bg-black/45 p-3 text-xs text-white">
+              <div className="flex items-center justify-between"><span>foco</span><span>+18%</span></div>
+              <div className="flex items-center justify-between"><span>cor</span><span>+24%</span></div>
+              <div className="flex items-center justify-between"><span>nitidez</span><span>+31%</span></div>
+            </div>
+          )}
+          {etapaAtual === 6 && (
+            <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="absolute bottom-5 left-4 right-4 rounded-2xl border border-amber-300/30 bg-black/60 p-3 text-center text-xs font-bold text-amber-100">
+              IMG_2026.HEIC salvo
+            </motion.div>
+          )}
+          {isCloud && (
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="absolute inset-0 flex items-center justify-center bg-slate-950/55 backdrop-blur-sm">
+              <div className="rounded-3xl border border-cyan-300/40 bg-black/60 p-5 text-center text-cyan-100 shadow-[0_0_30px_rgba(34,211,238,.28)]">
+                <Icon name="cloud" className="mx-auto mb-2" size={46} />
+                <p className="text-sm font-black">Sincronizado</p>
+                <p className="mt-1 text-xs text-white/60">cópia remota criada</p>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+
+      <AnimatePresence mode="wait">
+        <motion.div key={etapaAtual} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/10 bg-white/8 p-4 backdrop-blur">
+          <p className="text-xs uppercase tracking-[0.22em] text-cyan-200/70">etapa ativa</p>
+          <p className="mt-1 text-lg font-black text-white">{etapas[etapaAtual - 1].titulo}</p>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function QuizBox() {
+  const [indice, setIndice] = useState(0);
+  const [selecionada, setSelecionada] = useState(null);
+  const atual = miniQuiz[indice];
+  const acertou = selecionada === atual.correta;
+
+  function responder(i) {
+    setSelecionada(i);
+  }
+
+  function proxima() {
+    setSelecionada(null);
+    setIndice((indice + 1) % miniQuiz.length);
+  }
+
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5 shadow-2xl backdrop-blur">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="rounded-2xl bg-gradient-to-br from-fuchsia-400 to-cyan-400 p-3 text-slate-950"><Icon name="question" size={24} /></div>
+        <div>
+          <h3 className="text-lg font-black text-white">Checagem formativa</h3>
+          <p className="text-sm text-white/55">Questão {indice + 1} de {miniQuiz.length}</p>
+        </div>
+      </div>
+      <p className="text-base font-semibold leading-relaxed text-white">{atual.pergunta}</p>
+      <div className="mt-4 grid gap-2">
+        {atual.opcoes.map((opcao, i) => {
+          const selected = selecionada === i;
+          const correct = selecionada !== null && i === atual.correta;
+          return (
+            <button
+              key={opcao}
+              onClick={() => responder(i)}
+              className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${correct ? "border-emerald-300/70 bg-emerald-400/15 text-emerald-100" : selected ? "border-red-300/70 bg-red-400/10 text-red-100" : "border-white/10 bg-black/20 text-white/75 hover:bg-white/10"}`}
+            >
+              {opcao}
+            </button>
+          );
+        })}
+      </div>
+      {selecionada !== null && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-2xl border border-white/10 bg-black/25 p-4">
+          <p className={`font-bold ${acertou ? "text-emerald-200" : "text-amber-200"}`}>{acertou ? "Boa análise." : "Quase. Repare no papel de cada componente."}</p>
+          <p className="mt-1 text-sm leading-relaxed text-white/65">{atual.feedback}</p>
+          <button onClick={proxima} className="mt-3 rounded-xl bg-white px-4 py-2 text-sm font-black text-slate-950 hover:bg-cyan-100">Próxima questão</button>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+export default function SimuladorCaminhoDosDados() {
+  const [etapaAtual, setEtapaAtual] = useState(1);
+  const [rodando, setRodando] = useState(false);
+  const [velocidade, setVelocidade] = useState(1400);
+  const [modoProfessor, setModoProfessor] = useState(true);
+  const [mostrarBits, setMostrarBits] = useState(true);
+  const timer = useRef(null);
+
+  useEffect(() => {
+    runSelfTests();
+  }, []);
+
+  useEffect(() => {
+    if (!rodando) return undefined;
+    timer.current = window.setInterval(() => {
+      setEtapaAtual((prev) => {
+        if (prev >= etapas.length) {
+          setRodando(false);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, velocidade);
+
+    return () => {
+      if (timer.current) window.clearInterval(timer.current);
+    };
+  }, [rodando, velocidade]);
+
+  const etapa = etapas[etapaAtual - 1];
+
+  function resetar() {
+    setRodando(false);
+    setEtapaAtual(1);
+  }
+
+  function proxima() {
+    setRodando(false);
+    setEtapaAtual((prev) => Math.min(prev + 1, etapas.length));
+  }
+
+  return (
+    <div className="min-h-screen overflow-hidden bg-slate-950 text-white">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,.16),transparent_30%),radial-gradient(circle_at_85%_25%,rgba(168,85,247,.18),transparent_25%),radial-gradient(circle_at_50%_90%,rgba(245,158,11,.12),transparent_25%)]" />
+      <div className="pointer-events-none fixed inset-0 opacity-[0.06]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.8) 1px, transparent 1px)", backgroundSize: "38px 38px" }} />
+
+      <main className="relative mx-auto max-w-7xl px-5 py-8 lg:px-8">
+        <section className="mb-8 rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-2xl backdrop-blur md:p-8">
+          <div className="grid gap-6 lg:grid-cols-[1.2fr_.8fr] lg:items-center">
+            <div>
+              <div className="mb-4 flex flex-wrap gap-2">
+                <Badge><Icon name="sparkle" size={14} className="mr-2" /> Simulador didático interativo</Badge>
+                <Badge><Icon name="layers" size={14} className="mr-2" /> Entrada • processamento • memória • armazenamento • saída</Badge>
+              </div>
+              <h1 className="text-4xl font-black leading-tight tracking-tight md:text-6xl">
+                O caminho dos dados ao <span className="bg-gradient-to-r from-cyan-300 via-fuchsia-300 to-amber-200 bg-clip-text text-transparent">tirar uma foto</span>
+              </h1>
+              <p className="mt-4 max-w-3xl text-lg leading-relaxed text-white/68">
+                Uma foto no celular parece instantânea, mas percorre um fluxo completo: sinais físicos entram, viram dados, passam por memória, são processados, exibidos, salvos e podem ser enviados para a nuvem.
+              </p>
+            </div>
+            <div className="rounded-3xl border border-cyan-300/20 bg-slate-950/70 p-5 shadow-[0_0_40px_rgba(34,211,238,.12)]">
+              <div className="flex items-center gap-3">
+                <div className={`rounded-2xl bg-gradient-to-br ${etapa.acento} p-3 text-slate-950`}><Icon name={etapa.icon} size={28} /></div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.22em] text-white/45">Agora no fluxo</p>
+                  <h2 className="text-xl font-black text-white">{etapa.titulo}</h2>
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-white/65">{etapa.descricao}</p>
+              <DataParticle active etapaAtual={etapaAtual} paused={!rodando} />
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-8 grid gap-5 lg:grid-cols-[1fr_420px]">
+          <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-2xl backdrop-blur">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => setRodando(!rodando)} className="inline-flex items-center rounded-2xl bg-cyan-300 px-5 py-3 font-black text-slate-950 shadow-lg shadow-cyan-500/20 hover:bg-cyan-200">
+                  <Icon name={rodando ? "pause" : "play"} size={18} className="mr-2" />{rodando ? "Pausar" : "Iniciar"}
+                </button>
+                <button onClick={proxima} className="inline-flex items-center rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-bold text-white hover:bg-white/15"><Icon name="next" size={18} className="mr-2" />Avançar</button>
+                <button onClick={resetar} className="inline-flex items-center rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-bold text-white hover:bg-white/15"><Icon name="reset" size={18} className="mr-2" />Reiniciar</button>
+              </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                <span className="text-sm text-white/55">Velocidade</span>
+                <input type="range" min="700" max="2600" step="100" value={velocidade} onChange={(e) => setVelocidade(Number(e.target.value))} className="accent-cyan-300" />
+              </div>
+            </div>
+
+            <PhonePreview etapaAtual={etapaAtual} />
+          </div>
+
+          <div className="space-y-5">
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 shadow-2xl backdrop-blur">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className={`rounded-2xl bg-gradient-to-br ${etapa.acento} p-3 text-slate-950`}><Icon name={etapa.icon} size={26} /></div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.22em] text-white/45">Etapa {etapa.id}</p>
+                    <h3 className="text-xl font-black text-white">{etapa.componente}</h3>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-3">
+                <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-cyan-200/60">Pergunta provocativa</p>
+                  <p className="mt-2 text-sm font-semibold leading-relaxed text-white/80">{etapa.pergunta}</p>
+                </div>
+                <div className="rounded-2xl border border-amber-300/20 bg-amber-300/8 p-4">
+                  <p className="flex items-center text-xs uppercase tracking-[0.2em] text-amber-200/70"><Icon name="warning" size={14} className="mr-2" /> erro comum</p>
+                  <p className="mt-2 text-sm leading-relaxed text-white/72">{etapa.erro}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button onClick={() => setModoProfessor(!modoProfessor)} className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/15"><Icon name="teacher" size={16} className="mr-2 inline-flex" />Modo professor</button>
+                <button onClick={() => setMostrarBits(!mostrarBits)} className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/15"><Icon name="brain" size={16} className="mr-2 inline-flex" />Bits visíveis</button>
+              </div>
+            </div>
+
+            {modoProfessor && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-[2rem] border border-fuchsia-300/20 bg-fuchsia-300/[0.07] p-5 shadow-2xl backdrop-blur">
+                <h3 className="mb-2 flex items-center gap-2 text-lg font-black text-white"><Icon name="teacher" className="text-fuchsia-200" /> Fala estratégica do professor</h3>
+                <p className="text-sm leading-relaxed text-white/70">{etapa.professor}</p>
+              </motion.div>
+            )}
+
+            {mostrarBits && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/[0.06] p-5 shadow-2xl backdrop-blur">
+                <h3 className="mb-3 text-lg font-black text-white">Fluxo simbólico dos bits</h3>
+                <div className="font-mono text-xs leading-6 text-cyan-100/80">
+                  {Array.from({ length: 6 }).map((_, linha) => (
+                    <motion.div key={linha} animate={rodando ? { x: [0, 8, 0], opacity: [0.45, 1, 0.45] } : {}} transition={{ repeat: rodando ? Infinity : 0, delay: linha * 0.12, duration: 1.2 }}>
+                      {Array.from({ length: 36 }).map((_, i) => ((i + linha + etapaAtual) % 3 === 0 ? "1" : "0")).join(" ")}
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </section>
+
+        <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-7">
+          {etapas.map((item) => (
+            <EtapaCard key={item.id} etapa={item} ativo={item.id === etapaAtual} concluido={item.id < etapaAtual} onClick={(id) => { setRodando(false); setEtapaAtual(id); }} />
+          ))}
+        </section>
+
+        <section className="mb-10 grid gap-5 lg:grid-cols-[1fr_1fr]">
+          <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-6 shadow-2xl backdrop-blur">
+            <h2 className="mb-4 text-2xl font-black text-white">Leitura didática do fluxo</h2>
+            <div className="grid gap-3">
+              <div className="rounded-2xl border border-white/10 bg-black/25 p-4"><b className="text-cyan-200">Entrada:</b> câmera e sensor capturam sinais do mundo físico.</div>
+              <div className="rounded-2xl border border-white/10 bg-black/25 p-4"><b className="text-emerald-200">Memória:</b> a RAM mantém temporariamente os dados em uso.</div>
+              <div className="rounded-2xl border border-white/10 bg-black/25 p-4"><b className="text-amber-200">Processamento:</b> CPU/ISP transformam dados conforme instruções.</div>
+              <div className="rounded-2xl border border-white/10 bg-black/25 p-4"><b className="text-violet-200">Saída e permanência:</b> tela exibe; armazenamento salva; nuvem sincroniza.</div>
+            </div>
+          </div>
+          <QuizBox />
+        </section>
+
+        <footer className="rounded-[2rem] border border-white/10 bg-gradient-to-r from-cyan-400/10 via-fuchsia-400/10 to-amber-300/10 p-6 text-center shadow-2xl">
+          <p className="text-2xl font-black italic text-white">Tirar uma foto parece simples. Por trás do toque na tela, há entrada, representação, memória, processamento, armazenamento, saída e circulação de dados.</p>
+        </footer>
+      </main>
+    </div>
+  );
+}
