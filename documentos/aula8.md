@@ -3,6 +3,7 @@
 
 ### Materiais
 - [Notas de aula](Aula_08_Introducao_ao_computador.pdf)
+- [Apostila Memória Principal e Secundária. Dispositivos de Entrada e Saída](apostila_memoria_dispositivos.pdf)
   
 
 ###  Materiais extras
