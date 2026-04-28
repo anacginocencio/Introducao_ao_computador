@@ -7,10 +7,10 @@
   
 
 ###  Materiais extras
-<!--
-#### Vídeo Aula 6
-[![CPU, Unidade de Controle, Unidade Lógica Aritmética e Registradores - Aula Rapida](CAPA_AULAS.png)]()
--->
+
+#### Vídeo Aula 8
+[![Memória Principal e Secundária e Dispositivos de Entrada e Saída - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/yaB97Pg79ZA)
+
 
 ## Desenvolvimento Aula 
 
