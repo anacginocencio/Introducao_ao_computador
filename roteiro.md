@@ -7,3 +7,4 @@
 - [Organização Básica da arquitetura de computadores Modelo Von Neumann - 3h](documentos/aula6.md)
 - [CPU, Unidade de Controle, Unidade Lógica Aritmética e Registradores - 3h](documentos/aula7.md)
 - [Memória principal, memória secundária, dispositivos de Entrada e saída - 3h](documentos/aula8.md)
+- [Conceito e Funções dos Sistemas Operacionais - 3h](documentos/aula9.md)
