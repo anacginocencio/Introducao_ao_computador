@@ -7,8 +7,8 @@
 
 ###  Materiais extras
 
-#### Vídeo Aula 8
-[![Memória Principal e Secundária e Dispositivos de Entrada e Saída - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/yaB97Pg79ZA)
+#### Vídeo Aula 9
+[![Conceito e Funções dos Sistemas Operacionais - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/nKE59zFKL4Q)
 
 
 ## Desenvolvimento Aula 
