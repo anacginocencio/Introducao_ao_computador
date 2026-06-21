@@ -7,7 +7,7 @@
 
 ###  Materiais extras
 
-#### Vídeo Aula 9
+#### Vídeo Aula 10
 [![Conceito e Funções dos Sistemas Operacionais - Aula Rapida](CAPA_AULAS.png)](https://youtu.be/yuwc0zx5SDc)
 
 
