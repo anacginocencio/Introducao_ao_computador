@@ -9,3 +9,4 @@
 - [Memória principal, memória secundária, dispositivos de Entrada e saída - 3h](documentos/aula8.md)
 - [Conceito e Funções dos Sistemas Operacionais - 3h](documentos/aula9.md)
 - [Gerenciamento de Processos - 3h](documentos/aula10.md)
+- [Gerenciamento de Memória - 3h](documentos/aula11.md)
