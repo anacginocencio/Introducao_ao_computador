@@ -10,3 +10,4 @@
 - [Conceito e Funções dos Sistemas Operacionais - 3h](documentos/aula9.md)
 - [Gerenciamento de Processos - 3h](documentos/aula10.md)
 - [Gerenciamento de Memória - 3h](documentos/aula11.md)
+- [Interação Humano-Computador - 3h](documentos/aula12.md)
